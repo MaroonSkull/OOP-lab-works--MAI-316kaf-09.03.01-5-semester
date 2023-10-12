@@ -1,0 +1,66 @@
+#pragma once
+
+#include <iostream>
+#include <Symbol.hpp>
+#include <list>
+#include <random>
+#include <functional>
+
+
+
+class Line {
+private:
+	std::list<Symbol> Symbols_;
+	// базовые координаты, от которых начинается линия
+	double x_{};
+	double y_{};
+
+	uint8_t offsetCounter_{};
+
+	uint16_t width_;
+	uint16_t height_;
+
+	bool epilepsy_;
+
+	uint8_t length_{};
+public:
+	Line(uint8_t length, uint16_t width, uint16_t height, bool epilepsy)
+		: length_{ length }, y_{ static_cast<double>(height) }, width_{ width }, height_{ height }, epilepsy_{ epilepsy }
+	{
+		std::random_device rd_;
+		std::ranlux24_base engine_(rd_());
+		std::uniform_int_distribution<uint32_t> uniformDist_(0, width_);
+		x_ = uniformDist_(engine_);
+		move(0.); // первый элемент линии
+	}
+
+	void addSymbol() {
+		if (Symbols_.size() >= length_) {
+			Symbols_.pop_front();
+			offsetCounter_--;
+		}
+		for (auto& Node : Symbols_)
+			Node.setXY(x_, y_);
+		Symbols_.push_back(Symbol(x_, y_, 0, offsetCounter_++, epilepsy_));
+	}
+
+	void move(double dx) {
+		uint16_t y{ static_cast<uint16_t>(y_) };
+		y_ -= dx; // здесь поведение зависит от варианта
+		if (static_cast<uint16_t>(y_) - y != 0)
+			addSymbol();
+	}
+
+	uint8_t getOffset() const {
+		return offsetCounter_;
+	}
+
+	uint16_t getY() const {
+		return y_;
+	}
+
+	void print() {
+		for (auto& Node : Symbols_)
+			Node.print();
+	}
+};
