@@ -39,8 +39,22 @@ public:
 			Symbols_.pop_front();
 			offsetCounter_--;
 		}
-		for (auto& Node : Symbols_)
-			Node.setXY(x_, y_);
+		for (auto& Node : Symbols_) {
+
+			// Seed with a real random value, if available
+			std::random_device rd_;
+			std::ranlux24_base engine_(rd_());
+			std::uniform_int_distribution<uint32_t> uniformSymbolDist_(32, 255);
+			char symbol = static_cast<char>(uniformSymbolDist_(engine_));
+
+			if (epilepsy_) {
+				std::uniform_int_distribution<uint32_t> uniformColorDist_(0, 15);
+				uint8_t color = static_cast<uint8_t>(uniformColorDist_(engine_));
+			}
+
+			// тут надо мб у следующей ноды взять символ и цвет? 
+			//Node.setXY(x_, y_);
+		}
 		Symbols_.push_back(Symbol(x_, y_, 0, offsetCounter_++, epilepsy_));
 	}
 
