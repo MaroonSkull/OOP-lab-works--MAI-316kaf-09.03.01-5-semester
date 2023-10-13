@@ -11,7 +11,7 @@
 class Line {
 private:
 	std::list<Symbol> Symbols_;
-	// базовые координаты, от которых начинается линия
+	// Р±Р°Р·РѕРІС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹, РѕС‚ РєРѕС‚РѕСЂС‹С… РЅР°С‡РёРЅР°РµС‚СЃСЏ Р»РёРЅРёСЏ
 	double x_{};
 	double y_{};
 
@@ -31,7 +31,7 @@ public:
 		std::ranlux24_base engine_(rd_());
 		std::uniform_int_distribution<uint32_t> uniformDist_(0, width_);
 		x_ = uniformDist_(engine_);
-		move(0.); // первый элемент линии
+		move(0.); // РїРµСЂРІС‹Р№ СЌР»РµРјРµРЅС‚ Р»РёРЅРёРё
 	}
 
 	void addSymbol() {
@@ -52,7 +52,7 @@ public:
 				uint8_t color = static_cast<uint8_t>(uniformColorDist_(engine_));
 			}
 
-			// тут надо мб у следующей ноды взять символ и цвет? 
+			// С‚СѓС‚ РЅР°РґРѕ РјР± Сѓ СЃР»РµРґСѓСЋС‰РµР№ РЅРѕРґС‹ РІР·СЏС‚СЊ СЃРёРјРІРѕР» Рё С†РІРµС‚? 
 			//Node.setXY(x_, y_);
 		}
 		Symbols_.push_back(Symbol(x_, y_, 0, offsetCounter_++, epilepsy_));
@@ -60,7 +60,7 @@ public:
 
 	void move(double dx) {
 		uint16_t y{ static_cast<uint16_t>(y_) };
-		y_ -= dx; // здесь поведение зависит от варианта
+		y_ -= dx; // Р·РґРµСЃСЊ РїРѕРІРµРґРµРЅРёРµ Р·Р°РІРёСЃРёС‚ РѕС‚ РІР°СЂРёР°РЅС‚Р°
 		if (static_cast<uint16_t>(y_) - y != 0)
 			addSymbol();
 	}
