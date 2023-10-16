@@ -27,9 +27,9 @@ void AppManager::updateScreen(double dt) {
 	for (auto it = LineList_.begin(); it != LineList_.end(); it++) {
 		// тут линии должны не перепрыгивать, а конкретно сдвигаться на n символов
 		it->move(speed_ * dt / 1000.);
-		auto offset{ it->getOffset() };
-		auto y{ it->getY() };
-		if (y - offset < 0) 
+		auto xOffset{ it->getXOffset() };
+		auto yOffset{ it->getYOffset() };
+		//if () 
 			LineList_.erase(it);
 	}
 	clearScreen();

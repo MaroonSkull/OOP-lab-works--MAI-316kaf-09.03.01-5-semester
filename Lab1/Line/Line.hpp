@@ -15,7 +15,8 @@ private:
 	double x_{};
 	double y_{};
 
-	uint8_t offsetCounter_{};
+	uint8_t xOffsetCounter_{};
+	uint8_t yOffsetCounter_{};
 
 	uint16_t width_;
 	uint16_t height_;
@@ -37,7 +38,8 @@ public:
 	void addSymbol() {
 		if (Symbols_.size() >= length_) {
 			Symbols_.pop_front();
-			offsetCounter_--;
+			xOffsetCounter_--;
+			yOffsetCounter_--;
 		}
 		for (auto& Node : Symbols_) {
 
@@ -55,7 +57,7 @@ public:
 			// тут надо мб у следующей ноды взять символ и цвет? 
 			//Node.setXY(x_, y_);
 		}
-		Symbols_.push_back(Symbol(x_, y_, 0, offsetCounter_++, epilepsy_));
+		Symbols_.push_back(Symbol(xOffsetCounter_++, yOffsetCounter_++));
 	}
 
 	void move(double dx) {
@@ -65,16 +67,16 @@ public:
 			addSymbol();
 	}
 
-	uint8_t getOffset() const {
-		return offsetCounter_;
+	uint8_t getXOffset() const {
+		return xOffsetCounter_;
 	}
 
-	uint16_t getY() const {
-		return y_;
+	uint16_t getYOffset() const {
+		return yOffsetCounter_;
 	}
 
 	void print() {
 		for (auto& Node : Symbols_)
-			Node.print();
+			Node.print(0, 0);
 	}
 };
