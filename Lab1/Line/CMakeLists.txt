@@ -9,4 +9,7 @@ target_include_directories (Line PUBLIC ./)
 
 target_compile_features (Line PUBLIC cxx_std_20)
 
-target_link_libraries (Line PUBLIC Symbol)
+target_link_libraries (Line
+	PUBLIC Symbol
+	PRIVATE Globals
+)
