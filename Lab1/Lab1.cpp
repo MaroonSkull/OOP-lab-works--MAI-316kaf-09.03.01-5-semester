@@ -35,10 +35,10 @@ int main() {
 			Duration timeFromLastScreenUpdate{ Clock::now() - frameStartTime };
 
 			// Засекаем время начала нового кадра
-			TimePoint frameStartTime = Clock::now();
+			frameStartTime = Clock::now();
 
 			// Отправляем запрос на изменение состояния и отрисовку
-			Application.updateScreen(timeFromLastScreenUpdate.count());
+			Application.updateScreen(timeFromLastScreenUpdate.count() * timeToSeconds);
 
 			// Если время, прошедшее с прошлого добавления линии больше, чем период
 			Duration timeSinceLastAddition{ Clock::now() - additionTime };
@@ -54,17 +54,16 @@ int main() {
 				additionTime = additionTime - timeSinceLastAddition; // а когда это было необходимо с точки зрения физики
 			}
 
+
 			// Вычисляем время, затраченное на текущий кадр
 			Duration frameTime{ Clock::now() - frameStartTime };
 
-			COORD tl = { 0,0 };
-			CONSOLE_SCREEN_BUFFER_INFO s;
-			HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
-			GetConsoleScreenBufferInfo(console, &s);
-			SetConsoleCursorPosition(console, tl);
-			std::cout << "FPS = " << 1. / (frameTime.count() * timeToSeconds) << std::endl;
+			
+			//SetConsoleCursorPosition(Global::hConsole, Global::tl);
+			//std::cout << "FPS = " << 1. / (frameTime.count() * timeToSeconds) << std::endl;
+			//SetConsoleCursorPosition(Global::hConsole, Global::tl);
 
-			constexpr auto maxFPS = 1.0;
+			constexpr auto maxFPS = 10.0;
 			constexpr Duration minTimePerFrame{ 1. / (maxFPS * timeToSeconds) };
 			// Если успели быстрее, ждём начала следующего кадра, чтобы не греть кремний
 			if (frameTime < minTimePerFrame)
