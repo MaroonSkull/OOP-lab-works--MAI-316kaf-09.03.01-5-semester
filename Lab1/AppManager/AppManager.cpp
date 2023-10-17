@@ -4,7 +4,7 @@ AppManager::AppManager() {
 	try {
 		getConsoleInfo();
 
-		// »спользуем минимально возможные типы
+		
 		/*freq_ = getIntegralFromConsole("частоту по€влени€ линий", 1, 30);
 		speed_ = getIntegralFromConsole("скорость линий", 1, 30);
 		length_ = getIntegralFromConsole("длину линий", 1, 30);
@@ -13,7 +13,7 @@ AppManager::AppManager() {
 		freq_ = 1;
 		speed_ = 1;
 		length_ = 5;
-		epilepsy_ = false;
+		epilepsy_ = true;
 
 		
 	}
@@ -23,34 +23,49 @@ AppManager::AppManager() {
 	}
 }
 
+// dt - прошедшее врем€ в секундах
 void AppManager::updateScreen(double dt) {
+	// ѕровер€ем, не изменились ли размеры консоли?
+	getConsoleInfo();
+
+	// ƒл€ каждой линии
 	for (auto it = LineList_.begin(); it != LineList_.end(); it++) {
-		// тут линии должны не перепрыгивать, а конкретно сдвигатьс€ на n символов
-		it->move(speed_ * dt / 1000.);
-		auto xOffset{ it->getXOffset() };
-		auto yOffset{ it->getYOffset() };
-		//if () 
+		// сдвигаем линию туда, где она должна была оказатьс€ с такой скоростью через такое врем€
+		it->move(speed_ * dt);
+
+		// получаем координаты начала линии
+		auto x{ it->getX() };
+		auto y{ it->getY() };
+
+		// если координаты начала линии скрылись за пределами отображаемой области
+		if (x != std::clamp(x, static_cast<uint16_t>(0), width_) &&
+			y != std::clamp(y, static_cast<uint16_t>(0), height_)) {
+
+			// удал€ем линию
 			LineList_.erase(it);
+		}
 	}
+	// после окончани€ основной логики, очищаем экран
 	clearScreen();
+	// ¬ыводим все линии в пор€дке их по€влени€ (от старых к новым)
 	for (auto& node : LineList_)
-		node.print();
+		node.print(width_, height_); // ѕередаЄм текущие размеры экрана
 }
 
 void AppManager::addLine() {
-	LineList_.push_back(Line(length_, width_, height_, epilepsy_));
+	LineList_.push_back(Line(width_, height_, length_, epilepsy_));
 }
 
 void AppManager::clearScreen() {
 #ifdef __linux__
 #elif _WIN32
-	COORD tl = { 0,0 };
+	
 	CONSOLE_SCREEN_BUFFER_INFO s;
-	GetConsoleScreenBufferInfo(hConsole_, &s);
+	GetConsoleScreenBufferInfo(Global::hConsole, &s);
 	DWORD written, cells = s.dwSize.X * s.dwSize.Y;
-	FillConsoleOutputCharacter(hConsole_, ' ', cells, tl, &written);
-	FillConsoleOutputAttribute(hConsole_, s.wAttributes, cells, tl, &written);
-	SetConsoleCursorPosition(hConsole_, tl);
+	FillConsoleOutputCharacter(Global::hConsole, ' ', cells, Global::tl, &written);
+	FillConsoleOutputAttribute(Global::hConsole, s.wAttributes, cells, Global::tl, &written);
+	SetConsoleCursorPosition(Global::hConsole, Global::tl);
 #endif
 }
 
@@ -98,9 +113,11 @@ void AppManager::getConsoleInfo() {
 
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
 	width_ = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-	height_ = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+	height_ = csbi.srWindow.Bottom - csbi.srWindow.Top;
 #else
-	// ћожно добавить обработку дл€ иных ќ—, или сделать возможным мануальный ввод размеров через arrv, arrc
+	// ћожно добавить обработку дл€ иных ќ—, или сделать возможным мануальный ввод размеров через argc, argv
+	width_ = 0;
+	height_ = 0;
 #endif
 	if (width_ == 0 || height_ == 0)
 		throw std::runtime_error{ "AppManager::getConsoleInfo() : Ќе удалось определить размер консоли!" };

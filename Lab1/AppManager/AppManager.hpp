@@ -21,6 +21,7 @@ concept Integral = std::is_integral_v<T>;
 
 class AppManager {
 private:
+	// Используем минимально возможные типы
 	uint16_t width_{};
 	uint16_t height_{};
 
@@ -28,8 +29,6 @@ private:
 	uint8_t speed_{};
 	uint8_t length_{};
 	bool epilepsy_{};
-
-	HANDLE hConsole_ = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	std::list<Line> LineList_;
 

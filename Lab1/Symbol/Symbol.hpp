@@ -2,31 +2,44 @@
 
 #include <iostream>
 #include <Windows.h>
+#include <Global.hpp>
 
 
 class Symbol {
 private:
-	uint16_t offsetX_;
-	uint16_t offsetY_;
+	int16_t offsetX_;
+	int16_t offsetY_;
 	char symbol_;
 	uint8_t color_;
 
-	bool isVisible_{ false };
-
-	HANDLE hConsole_ = GetStdHandle(STD_OUTPUT_HANDLE);
 
 public:
-	Symbol(uint16_t offsetX, uint16_t offsetY, char symbol = 'G', uint8_t color = 10)
+	Symbol(int16_t offsetX, int16_t offsetY, char symbol, uint8_t color)
 		: offsetX_{ offsetX }, offsetY_{ offsetY }, symbol_{ symbol }, color_{ color } {}
 
 	void print(uint16_t baseX, uint16_t baseY) {
-		if (!isVisible_)
-			return;
-
-		COORD tl = { baseX+offsetX_, baseY+offsetY_ };
-		SetConsoleCursorPosition(hConsole_, tl);
-		SetConsoleTextAttribute(hConsole_, color_);
+		COORD tl = { baseX+offsetX_, baseY+offsetY_ }; // ѕо идее, тут нас переполнение не беспокоит
+		SetConsoleCursorPosition(Global::hConsole, tl);
+		Global::setConsoleColor(color_);
 		std::cout << symbol_;
+		Global::setConsoleColor(0);
+	}
+
+	// getters & setters
+	int16_t getXOffset() const {
+		return offsetX_;
+	}
+
+	void setXOffset(int16_t offsetX) {
+		offsetX_ = offsetX;
+	}
+
+	int16_t getYOffset() const {
+		return offsetY_;
+	}
+
+	void setYOffset(int16_t offsetY) {
+		offsetY_ = offsetY;
 	}
 
 	char getSymbol() const {
