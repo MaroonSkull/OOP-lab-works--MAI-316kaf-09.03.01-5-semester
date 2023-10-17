@@ -3,19 +3,16 @@
 AppManager::AppManager() {
 	try {
 		getConsoleInfo();
-
 		
 		/*freq_ = getIntegralFromConsole("частоту по€влени€ линий", 1, 30);
 		speed_ = getIntegralFromConsole("скорость линий", 1, 30);
 		length_ = getIntegralFromConsole("длину линий", 1, 30);
 		epilepsy_ = getConfirmFromConsole("режим эпилепсии");*/
 
-		freq_ = 1;
-		speed_ = 1;
-		length_ = 5;
-		epilepsy_ = true;
-
-		
+		freq_ = 5;
+		speed_ = 20;
+		length_ = 18;
+		epilepsy_ = false;
 	}
 	catch (...) {
 		std::cerr << "»сключение в AppManager()!" << std::endl;
@@ -29,7 +26,7 @@ void AppManager::updateScreen(double dt) {
 	getConsoleInfo();
 
 	// ƒл€ каждой линии
-	for (auto it = LineList_.begin(); it != LineList_.end(); it++) {
+	for (auto it = LineList_.begin(); it != LineList_.end();) {
 		// сдвигаем линию туда, где она должна была оказатьс€ с такой скоростью через такое врем€
 		it->move(speed_ * dt);
 
@@ -38,15 +35,16 @@ void AppManager::updateScreen(double dt) {
 		auto y{ it->getY() };
 
 		// если координаты начала линии скрылись за пределами отображаемой области
-		if (x != std::clamp(x, static_cast<uint16_t>(0), width_) &&
+		if (x != std::clamp(x, static_cast<uint16_t>(0), width_) ||
 			y != std::clamp(y, static_cast<uint16_t>(0), height_)) {
-
 			// удал€ем линию
-			LineList_.erase(it);
+			it = LineList_.erase(it);
 		}
+		else
+			it++;
 	}
 	// после окончани€ основной логики, очищаем экран
-	clearScreen();
+	//clearScreen(); // Ёто решение годитс€ только дл€ низкого FPS, < ~15, либо дл€ двойной буферизации
 	// ¬ыводим все линии в пор€дке их по€влени€ (от старых к новым)
 	for (auto& node : LineList_)
 		node.print(width_, height_); // ѕередаЄм текущие размеры экрана
@@ -59,13 +57,12 @@ void AppManager::addLine() {
 void AppManager::clearScreen() {
 #ifdef __linux__
 #elif _WIN32
-	
 	CONSOLE_SCREEN_BUFFER_INFO s;
 	GetConsoleScreenBufferInfo(Global::hConsole, &s);
 	DWORD written, cells = s.dwSize.X * s.dwSize.Y;
 	FillConsoleOutputCharacter(Global::hConsole, ' ', cells, Global::tl, &written);
 	FillConsoleOutputAttribute(Global::hConsole, s.wAttributes, cells, Global::tl, &written);
-	SetConsoleCursorPosition(Global::hConsole, Global::tl);
+	Global::resetConsoleCursorPos<int>();
 #endif
 }
 

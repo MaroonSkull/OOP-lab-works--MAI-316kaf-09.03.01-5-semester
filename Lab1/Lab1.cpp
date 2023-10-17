@@ -17,6 +17,8 @@ int main() {
 	// Устанавливаем вывод на русском языке
 	setlocale(LC_ALL, "Russian");
 
+	SetConsoleActiveScreenBuffer(Global::hConsole);
+
 	try {
 		// Создаём класс, управляющий консолью и отрисовкой
 		AppManager Application;
@@ -54,18 +56,16 @@ int main() {
 				additionTime = additionTime - timeSinceLastAddition; // а когда это было необходимо с точки зрения физики
 			}
 
-
 			// Вычисляем время, затраченное на текущий кадр
 			Duration frameTime{ Clock::now() - frameStartTime };
-
 			
-			//SetConsoleCursorPosition(Global::hConsole, Global::tl);
-			//std::cout << "FPS = " << 1. / (frameTime.count() * timeToSeconds) << std::endl;
-			//SetConsoleCursorPosition(Global::hConsole, Global::tl);
+			// Отображаем текущий FPS
+			/* Global::setConsoleColor(15);
+			std::cout << "FPS = " << 1. / (frameTime.count() * timeToSeconds) << std::endl;
+			Global::resetConsoleCursorPos<int>(); */
 
-			constexpr auto maxFPS = 10.0;
-			constexpr Duration minTimePerFrame{ 1. / (maxFPS * timeToSeconds) };
 			// Если успели быстрее, ждём начала следующего кадра, чтобы не греть кремний
+			constexpr Duration minTimePerFrame{ 1. / (Global::maxFPS * timeToSeconds) };
 			if (frameTime < minTimePerFrame)
 				std::this_thread::sleep_for(minTimePerFrame - frameTime);
 		}
@@ -78,6 +78,8 @@ int main() {
 		std::cerr << "Неожиданное исключение!" << std::endl;
 		return -2;
 	}
+
+	CloseHandle(Global::hConsole);
 
 	return 0;
 }

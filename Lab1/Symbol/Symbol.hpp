@@ -18,10 +18,19 @@ public:
 		: offsetX_{ offsetX }, offsetY_{ offsetY }, symbol_{ symbol }, color_{ color } {}
 
 	void print(uint16_t baseX, uint16_t baseY) {
-		COORD tl = { baseX+offsetX_, baseY+offsetY_ }; // ѕо идее, тут нас переполнение не беспокоит
-		SetConsoleCursorPosition(Global::hConsole, tl);
+		print(baseX, baseY, symbol_);
+	}
+
+	void print(uint16_t baseX, uint16_t baseY, char symbol) {
+		int16_t consoleX{ static_cast<int16_t>(baseX) + offsetX_ };
+		int16_t consoleY{ static_cast<int16_t>(baseY) + offsetY_ - 1 };
+		if (consoleX < 0 || consoleY < 0) throw std::logic_error{ "Ёто конец" };
+		Global::setConsoleCursorPos(consoleX, consoleY);
 		Global::setConsoleColor(color_);
-		std::cout << symbol_;
+		std::cout << symbol;
+		//printf("%c", symbol_);
+		//DWORD dwBytesWritten = 0;
+		//WriteConsoleOutputCharacter(Global::hConsole, &symbol_, 1, tl, &dwBytesWritten);
 		Global::setConsoleColor(0);
 	}
 

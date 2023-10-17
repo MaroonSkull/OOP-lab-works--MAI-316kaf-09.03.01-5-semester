@@ -21,13 +21,13 @@ private:
 
 	uint16_t width_;
 	uint16_t height_;
-
+	uint8_t length_{};
 	bool epilepsy_;
 
-	uint8_t length_{};
 
 	char generateRandomSymbol() {
-		return static_cast<char>(Global::getRandomUniformIntDistribution(32, 255));
+		char symbol = static_cast<char>(Global::getRandomUniformIntDistribution(33, 126));
+		return symbol;
 	}
 
 	uint8_t generateColor() {
@@ -82,13 +82,19 @@ public:
 			// Мы уже добавили всё, что только могли, теперь остаётся только перемещать уже существующие символы
 			while (steps > 0) {
 				auto currentIt = Symbols_.begin();
+				for (; y < y_; y++) {
+					// Если позиция, где фактически должен быть стёрт символ, внутри экрана
+					if (x_ == std::clamp(static_cast<uint16_t>(x_), static_cast<uint16_t>(0), width_) &&
+						y == std::clamp(y, static_cast<uint16_t>(0), height_))
+						// Стираем символ с экрана в той точке, где его больше не будет
+						currentIt->print(x_, y, ' ');
+				}
 				for (; std::next(currentIt) != Symbols_.end(); currentIt++) {
-
+					// Так же необходимо сместить в обратную сторону символы и их цвета
 					currentIt->setColor(std::next(currentIt)->getColor());
 					currentIt->setSymbol(std::next(currentIt)->getSymbol());
-					// Так же необходимо сместить в обратную сторону символы
-					// и их цвета, сгенерировать последнему новый символ
 				}
+				// сгенерировать последнему новый символ
 				currentIt->setSymbol(generateRandomSymbol());
 				currentIt->setColor(generateColor());
 				steps--;
@@ -121,6 +127,8 @@ public:
 				ySymbolPosition == std::clamp(ySymbolPosition, static_cast<uint16_t>(0), height_))
 				// То печатаем символ
 				Node.print(x_, y_);
+			// Сбрасываем курсор
+			Global::resetConsoleCursorPos<int>();
 		}
 	}
 };
