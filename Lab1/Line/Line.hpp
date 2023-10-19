@@ -8,7 +8,7 @@
 #include <functional>
 
 
-template <Global::Direction _Direction> 
+template <Global::Direction _Direction, Global::LineType _LineType> 
 class Line {
 private:
 	std::list<Symbol> Symbols_;
@@ -19,15 +19,16 @@ private:
 	int8_t xOffsetCounter_{};
 	int8_t yOffsetCounter_{};
 
+	bool toggle_{};
+
 	int16_t width_;
 	int16_t height_;
 	int8_t length_{};
 	bool epilepsy_;
 
 
-	char generateRandomSymbol() {
-		char symbol = static_cast<char>(Global::getRandomUniformIntDistribution(33, 126));
-		return symbol;
+	char generateSymbol(bool isSpace = false) {
+		return isSpace ? ' ' : static_cast<char>(Global::getRandomUniformIntDistribution(33, 126));
 	}
 
 	int8_t generateColor() {
@@ -39,30 +40,67 @@ public:
 	Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
 		: width_{ width }, height_{ height }, length_{ length }, epilepsy_{ epilepsy }
 	{
+		toggle_ = (width_ + height_) % 2; // это позволяет нам выбирать, для зигзага сначала идёт левый или правый символ
+		// а для ромба - идёт сначала один символ или сразу два.
+
+		// TODO: перенести это декартово произведение на std::variant + std::visit, правда речь про RTTI, а не про compile-time вычисления
 		// тут x_ и y_ зависит от направления
 		if constexpr (_Direction == Global::Direction::upToDown) {
-			x_ = Global::getRandomUniformIntDistribution(static_cast<decltype(width_)>(0), width_);
 			y_ = 0;
+			if constexpr (_LineType == Global::LineType::line)
+				// линия занимает только один символ в ширину
+				x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), width_);
+			else if constexpr (_LineType == Global::LineType::zigzag)
+				// зиг-заг занимает свою клетку и клетку справа от себя
+				x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(width_ - 1));
+			else if constexpr (_LineType == Global::LineType::rhombus)
+				// ромб занимает свою клетку и клетки по бокам от себя
+				x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(width_ - 1));
 		}
 		else if constexpr (_Direction == Global::Direction::downToUp) {
-			x_ = Global::getRandomUniformIntDistribution(static_cast<decltype(width_)>(0), width_);
 			y_ = height_;
+			if constexpr (_LineType == Global::LineType::line)
+				// линия занимает только один символ в ширину
+				x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), width_);
+			else if constexpr (_LineType == Global::LineType::zigzag)
+				// зиг-заг занимает свою клетку и клетку справа от себя
+				x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(width_ - 1));
+			else if constexpr (_LineType == Global::LineType::rhombus)
+				// ромб занимает свою клетку и клетки по бокам от себя
+				x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(width_ - 1));
 		}
 		else if constexpr (_Direction == Global::Direction::leftToRight) {
 			x_ = 0;
-			y_ = Global::getRandomUniformIntDistribution(static_cast<decltype(height_)>(0), height_);
+			if constexpr (_LineType == Global::LineType::line)
+				// линия занимает только один символ в ширину
+				y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), height_);
+			else if constexpr (_LineType == Global::LineType::zigzag)
+				// зиг-заг занимает свою клетку и клетку снизу от себя
+				y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(height_-1));
+			else if constexpr (_LineType == Global::LineType::rhombus)
+				// ромб занимает свою клетку и клетки по бокам от себя
+				y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(height_ - 1));
 		}
 		else if constexpr (_Direction == Global::Direction::rightToLeft) {
 			x_ = width_;
-			y_ = Global::getRandomUniformIntDistribution(static_cast<decltype(height_)>(0), height_);
+			if constexpr (_LineType == Global::LineType::line)
+				// линия занимает только один символ в ширину
+				y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), height_);
+			else if constexpr (_LineType == Global::LineType::zigzag)
+				// зиг-заг занимает свою клетку и клетку снизу от себя
+				y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(height_ - 1));
+			else if constexpr (_LineType == Global::LineType::rhombus)
+					// ромб занимает свою клетку и клетки по бокам от себя
+					y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(height_ - 1));
 		}
 		else throw std::logic_error{ "Класс Line инициализирован неизвестным типом!" };
 	}
 
+	// todo подумать о том, куда перенести тернарные операторы
 	// Добавляет ровно один символ в линию
-	void addSymbol() {
-		// Выбираем рандомный символ
-		char symbol{ generateRandomSymbol() };
+	void addSymbol(bool isSpace = false) {
+		// Если это не пробел, то выбираем рандомный символ
+		char symbol{ generateSymbol(isSpace) };
 
 		// и задаём цвет
 		int8_t color{ generateColor() };
@@ -101,32 +139,184 @@ public:
 				// Играемся с отступами как нам надо
 				if constexpr (_Direction == Global::Direction::upToDown) {
 					yOffsetCounter_++;
-					// Добавляем символ
-					addSymbol();
+					
+					if constexpr (_LineType == Global::LineType::line) {
+						// Добавляем символ
+						addSymbol();
+					}
+					else if constexpr (_LineType == Global::LineType::zigzag) {
+						if (toggle_) { // в основной линии символ
+							addSymbol();
+							xOffsetCounter_++;
+							addSymbol(true);
+						}
+						else {
+							addSymbol(true);
+							xOffsetCounter_++;
+							addSymbol();
+						}
+						xOffsetCounter_--;
+						toggle_ = !toggle_;
+					}
+					else if constexpr (_LineType == Global::LineType::rhombus) {
+						if (toggle_) { // символ и два пробела вокруг
+							xOffsetCounter_--;
+							addSymbol(true);
+							xOffsetCounter_++;
+							addSymbol();
+							xOffsetCounter_++;
+							addSymbol(true);
+						}
+						else { // два символа вокруг пробела
+							xOffsetCounter_--;
+							addSymbol();
+							xOffsetCounter_++;
+							addSymbol(true);
+							xOffsetCounter_++;
+							addSymbol();
+						}
+						xOffsetCounter_--;
+						toggle_ = !toggle_;
+					}
+
 					y_--;
 
 					stepsY--;
 				}
 				else if constexpr (_Direction == Global::Direction::downToUp) {
 					yOffsetCounter_--;
-					// Добавляем символ
-					addSymbol();
+
+					if constexpr (_LineType == Global::LineType::line) {
+						// Добавляем символ
+						addSymbol();
+					}
+					else if constexpr (_LineType == Global::LineType::zigzag) {
+						if (toggle_) { // в основной линии символ
+							addSymbol();
+							xOffsetCounter_++;
+							addSymbol(true);
+						}
+						else {
+							addSymbol(true);
+							xOffsetCounter_++;
+							addSymbol();
+						}
+						xOffsetCounter_--;
+						toggle_ = !toggle_;
+					}
+					else if constexpr (_LineType == Global::LineType::rhombus) {
+						if (toggle_) { // символ и два пробела вокруг
+							xOffsetCounter_--;
+							addSymbol(true);
+							xOffsetCounter_++;
+							addSymbol();
+							xOffsetCounter_++;
+							addSymbol(true);
+						}
+						else { // два символа вокруг пробела
+							xOffsetCounter_--;
+							addSymbol();
+							xOffsetCounter_++;
+							addSymbol(true);
+							xOffsetCounter_++;
+							addSymbol();
+						}
+						xOffsetCounter_--;
+						toggle_ = !toggle_;
+					}
+
 					y_++;
 
 					stepsY++;
 				}
 				else if constexpr (_Direction == Global::Direction::leftToRight) {
 					xOffsetCounter_++;
-					// Добавляем символ
-					addSymbol();
+					
+					if constexpr (_LineType == Global::LineType::line) {
+						// Добавляем символ
+						addSymbol();
+					}
+					else if constexpr (_LineType == Global::LineType::zigzag) {
+						if (toggle_) { // в основной линии символ
+							addSymbol();
+							yOffsetCounter_++;
+							addSymbol(true);
+						}
+						else {
+							addSymbol(true);
+							yOffsetCounter_++;
+							addSymbol();
+						}
+						yOffsetCounter_--;
+						toggle_ = !toggle_;
+					}
+					else if constexpr (_LineType == Global::LineType::rhombus) {
+						if (toggle_) { // символ и два пробела вокруг
+							yOffsetCounter_--;
+							addSymbol(true);
+							yOffsetCounter_++;
+							addSymbol();
+							yOffsetCounter_++;
+							addSymbol(true);
+						}
+						else { // два символа вокруг пробела
+							yOffsetCounter_--;
+							addSymbol();
+							yOffsetCounter_++;
+							addSymbol(true);
+							yOffsetCounter_++;
+							addSymbol();
+						}
+						yOffsetCounter_--;
+						toggle_ = !toggle_;
+					}
+
 					x_--;
 
 					stepsX--;
 				}
 				else if constexpr (_Direction == Global::Direction::rightToLeft) {
 					xOffsetCounter_--;
-					// Добавляем символ
-					addSymbol();
+					
+					if constexpr (_LineType == Global::LineType::line) {
+						// Добавляем символ
+						addSymbol();
+					}
+					else if constexpr (_LineType == Global::LineType::zigzag) {
+						if (toggle_) { // в основной линии символ
+							addSymbol();
+							yOffsetCounter_++;
+							addSymbol(true);
+						}
+						else {
+							addSymbol(true);
+							yOffsetCounter_++;
+							addSymbol();
+						}
+						yOffsetCounter_--;
+						toggle_ = !toggle_;
+					}
+					else if constexpr (_LineType == Global::LineType::rhombus) {
+						if (toggle_) { // символ и два пробела вокруг
+							yOffsetCounter_--;
+							addSymbol(true);
+							yOffsetCounter_++;
+							addSymbol();
+							yOffsetCounter_++;
+							addSymbol(true);
+						}
+						else { // два символа вокруг пробела
+							yOffsetCounter_--;
+							addSymbol();
+							yOffsetCounter_++;
+							addSymbol(true);
+							yOffsetCounter_++;
+							addSymbol();
+						}
+						yOffsetCounter_--;
+						toggle_ = !toggle_;
+					}
+
 					x_++;
 
 					stepsX++;
@@ -139,9 +329,25 @@ public:
 			for (; y != static_cast<int16_t>(y_) || x != static_cast<int16_t>(x_);) {
 				// Если позиция, где фактически должен быть стёрт символ, внутри экрана
 				if (x == std::clamp(x, static_cast<int16_t>(0), static_cast<int16_t>(width_)) &&
-					y == std::clamp(y, static_cast<int16_t>(0), static_cast<int16_t>(height_)))
-					// Стираем символ с экрана в той точке, где его больше не будет
-					currentIt->print(x, y, ' ');
+					y == std::clamp(y, static_cast<int16_t>(0), static_cast<int16_t>(height_))) {
+					if constexpr (_LineType == Global::LineType::line)
+						// Стираем символ с экрана в той точке, где его больше не будет
+						currentIt->print(x, y, ' ');
+					else if constexpr (_LineType == Global::LineType::zigzag) {
+						// стираем оба символа, что должны быть в начале (нас не волнует стирание пробельных символов)
+						currentIt->print(x, y, ' ');
+						currentIt++;
+						currentIt->print(x, y, ' ');
+					}
+					else if constexpr (_LineType == Global::LineType::rhombus) {
+						// стираем три начальных символа
+						currentIt->print(x, y, ' ');
+						currentIt++;
+						currentIt->print(x, y, ' ');
+						currentIt++;
+						currentIt->print(x, y, ' ');
+					}
+				}
 				if constexpr (_Direction == Global::Direction::upToDown) {
 					y++;
 				}
@@ -155,14 +361,70 @@ public:
 					x--;
 				}
 			}
-			for (; std::next(currentIt) != Symbols_.end(); currentIt++) {
-				// Так же необходимо сместить в обратную сторону символы и их цвета
-				currentIt->setColor(std::next(currentIt)->getColor());
-				currentIt->setSymbol(std::next(currentIt)->getSymbol());
+			// Так же необходимо сместить в обратную сторону символы и их цвета
+			if constexpr (_LineType == Global::LineType::line) {
+				for (; std::next(currentIt) != Symbols_.end(); currentIt++) {
+					// копируем только один символ
+					currentIt->setColor(std::next(currentIt)->getColor());
+					currentIt->setSymbol(std::next(currentIt)->getSymbol());
+				}
+				// сгенерировать последнему новый символ
+				currentIt->setSymbol(generateSymbol());
+				currentIt->setColor(generateColor());
 			}
-			// сгенерировать последнему новый символ
-			currentIt->setSymbol(generateRandomSymbol());
-			currentIt->setColor(generateColor());
+			else if constexpr (_LineType == Global::LineType::zigzag) {
+				for (; std::next(std::next(currentIt)) != Symbols_.end() && Symbols_.size() >=2; currentIt++) {
+					// копируем на два символа вперёд
+					currentIt->setColor(std::next(std::next(currentIt))->getColor());
+					currentIt->setSymbol(std::next(std::next(currentIt))->getSymbol());
+				}
+				// сгенерировать последним двум новый символ
+				if (toggle_) { // в основной линии символ
+					currentIt->setSymbol(generateSymbol());
+					currentIt->setColor(generateColor());
+					currentIt++;
+					currentIt->setSymbol(generateSymbol(true));
+					currentIt->setColor(generateColor());
+				}
+				else {
+					currentIt->setSymbol(generateSymbol(true));
+					currentIt->setColor(generateColor());
+					currentIt++;
+					currentIt->setSymbol(generateSymbol());
+					currentIt->setColor(generateColor());
+				}
+				toggle_ = !toggle_;
+			}
+			else if constexpr (_LineType == Global::LineType::rhombus) {
+				// копируем через 3 символа вперёд
+				for (; std::next(std::next(std::next(currentIt))) != Symbols_.end() && Symbols_.size() >=3; currentIt++) {
+					currentIt->setColor(std::next(std::next(std::next(currentIt)))->getColor());
+					currentIt->setSymbol(std::next(std::next(std::next(currentIt)))->getSymbol());
+				}
+				// сгенерировать последним трём новый символ
+				if (toggle_) { // символ и два пробела вокруг
+					currentIt->setSymbol(generateSymbol(true));
+					currentIt->setColor(generateColor());
+					currentIt++;
+					currentIt->setSymbol(generateSymbol());
+					currentIt->setColor(generateColor());
+					currentIt++;
+					currentIt->setSymbol(generateSymbol(true));
+					currentIt->setColor(generateColor());
+				}
+				else { // два символа вокруг пробела
+					currentIt->setSymbol(generateSymbol());
+					currentIt->setColor(generateColor());
+					currentIt++;
+					currentIt->setSymbol(generateSymbol(true));
+					currentIt->setColor(generateColor());
+					currentIt++;
+					currentIt->setSymbol(generateSymbol());
+					currentIt->setColor(generateColor());
+				}
+				toggle_ = !toggle_;
+			}
+
 			if constexpr (_Direction == Global::Direction::upToDown) {
 				stepsY--;
 			}

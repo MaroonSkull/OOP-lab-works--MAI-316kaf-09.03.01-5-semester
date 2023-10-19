@@ -12,7 +12,14 @@ namespace Global {
 		downToUp
 	};
 
+	enum class LineType {
+		line,
+		zigzag,
+		rhombus
+	};
+
 	static const Direction myDirection = Direction::rightToLeft;
+	static const LineType myLineType = LineType::rhombus;
 
 	const static COORD tl = { 0,0 };
 	const static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
