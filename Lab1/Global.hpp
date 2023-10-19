@@ -5,6 +5,15 @@ namespace Global {
 
 	constexpr auto maxFPS = 60.0;
 
+	enum class Direction {
+		leftToRight,
+		upToDown,
+		rightToLeft,
+		downToUp
+	};
+
+	static const Direction myDirection = Direction::rightToLeft;
+
 	const static COORD tl = { 0,0 };
 	const static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	//const static HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);

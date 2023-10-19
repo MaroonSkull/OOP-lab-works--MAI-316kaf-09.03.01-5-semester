@@ -8,7 +8,7 @@
 #include <functional>
 
 
-
+template <Global::Direction _Direction> 
 class Line {
 private:
 	std::list<Symbol> Symbols_;
@@ -19,9 +19,9 @@ private:
 	int8_t xOffsetCounter_{};
 	int8_t yOffsetCounter_{};
 
-	uint16_t width_;
-	uint16_t height_;
-	uint8_t length_{};
+	int16_t width_;
+	int16_t height_;
+	int8_t length_{};
 	bool epilepsy_;
 
 
@@ -30,19 +30,33 @@ private:
 		return symbol;
 	}
 
-	uint8_t generateColor() {
+	int8_t generateColor() {
 		// цвет рандомный, если установлен флаг эпилепсии, ярко-зелёный (№10) по-умолчанию
-		return epilepsy_ ? static_cast<uint8_t>(Global::getRandomUniformIntDistribution(1, 15)) : 10;
+		return epilepsy_ ? static_cast<int8_t>(Global::getRandomUniformIntDistribution(1, 15)) : 10;
 	}
 
 public:
-	Line(uint16_t width, uint16_t height, uint8_t length, bool epilepsy)
+	Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
 		: width_{ width }, height_{ height }, length_{ length }, epilepsy_{ epilepsy }
 	{
 		// тут x_ и y_ зависит от направления
-		x_ = Global::getRandomUniformIntDistribution(static_cast<decltype(width_)>(0), width_);
-		//y_ = Global::getRandomUniformIntDistribution(static_cast<decltype(height_)>(0), height_);
-		y_ = 0;
+		if constexpr (_Direction == Global::Direction::upToDown) {
+			x_ = Global::getRandomUniformIntDistribution(static_cast<decltype(width_)>(0), width_);
+			y_ = 0;
+		}
+		else if constexpr (_Direction == Global::Direction::downToUp) {
+			x_ = Global::getRandomUniformIntDistribution(static_cast<decltype(width_)>(0), width_);
+			y_ = height_;
+		}
+		else if constexpr (_Direction == Global::Direction::leftToRight) {
+			x_ = 0;
+			y_ = Global::getRandomUniformIntDistribution(static_cast<decltype(height_)>(0), height_);
+		}
+		else if constexpr (_Direction == Global::Direction::rightToLeft) {
+			x_ = width_;
+			y_ = Global::getRandomUniformIntDistribution(static_cast<decltype(height_)>(0), height_);
+		}
+		else throw std::logic_error{ "Класс Line инициализирован неизвестным типом!" };
 	}
 
 	// Добавляет ровно один символ в линию
@@ -51,67 +65,129 @@ public:
 		char symbol{ generateRandomSymbol() };
 
 		// и задаём цвет
-		uint8_t color{ generateColor() };
+		int8_t color{ generateColor() };
 
 		Symbols_.push_back(Symbol(xOffsetCounter_, yOffsetCounter_, symbol, color));
 	}
 
 	void move(double distance) {
-		// здесь поведение зависит от варианта
 		
 		// Получаем текущую позицию начала линии
-		uint16_t y{ static_cast<uint16_t>(y_) };
+		int16_t x{ static_cast<int16_t>(x_) };
+		int16_t y{ static_cast<int16_t>(y_) };
 		// Накапливаем смещение
-		y_ += distance;
-
+		if constexpr (_Direction == Global::Direction::upToDown) {
+			y_ += distance;
+		}
+		else if constexpr (_Direction == Global::Direction::downToUp) {
+			y_ -= distance;
+		}
+		else if constexpr (_Direction == Global::Direction::leftToRight) {
+			x_ += distance;
+		}
+		else if constexpr (_Direction == Global::Direction::rightToLeft) {
+			x_ -= distance;
+		}
+		
 		// Вычисляем, на сколько позиций нам надо сместиться
-		uint16_t steps = static_cast<uint16_t>(y_) - y;
+		int16_t stepsY = static_cast<int16_t>(y_) - y; // вертикально
+		int16_t stepsX = static_cast<int16_t>(x_) - x; // горизонтально
 
 
 		// Если целочисленно нам пора бы уже сместиться
-		if (steps != 0) {
+		while (stepsX != 0 || stepsY != 0) {
 			// Если мы всё ещё не полностью добавили все символы линии
-			for (; Symbols_.size() < length_ && steps > 0; steps--) {
+			if (Symbols_.size() < length_) {
 				// Играемся с отступами как нам надо
-				//xOffsetCounter_--;
-				yOffsetCounter_++;
-				// Добавляем символ
-				addSymbol();
-				y_--;
+				if constexpr (_Direction == Global::Direction::upToDown) {
+					yOffsetCounter_++;
+					// Добавляем символ
+					addSymbol();
+					y_--;
+
+					stepsY--;
+				}
+				else if constexpr (_Direction == Global::Direction::downToUp) {
+					yOffsetCounter_--;
+					// Добавляем символ
+					addSymbol();
+					y_++;
+
+					stepsY++;
+				}
+				else if constexpr (_Direction == Global::Direction::leftToRight) {
+					xOffsetCounter_++;
+					// Добавляем символ
+					addSymbol();
+					x_--;
+
+					stepsX--;
+				}
+				else if constexpr (_Direction == Global::Direction::rightToLeft) {
+					xOffsetCounter_--;
+					// Добавляем символ
+					addSymbol();
+					x_++;
+
+					stepsX++;
+				}
+				continue;
 			}
 			// Мы уже добавили всё, что только могли, теперь остаётся только перемещать уже существующие символы
-			while (steps > 0) {
-				auto currentIt = Symbols_.begin();
-				for (; y < y_; y++) {
-					// Если позиция, где фактически должен быть стёрт символ, внутри экрана
-					if (x_ == std::clamp(static_cast<uint16_t>(x_), static_cast<uint16_t>(0), width_) &&
-						y == std::clamp(y, static_cast<uint16_t>(0), height_))
-						// Стираем символ с экрана в той точке, где его больше не будет
-						currentIt->print(x_, y, ' ');
+		
+			auto currentIt = Symbols_.begin();
+			for (; y != static_cast<int16_t>(y_) || x != static_cast<int16_t>(x_);) {
+				// Если позиция, где фактически должен быть стёрт символ, внутри экрана
+				if (x == std::clamp(x, static_cast<int16_t>(0), static_cast<int16_t>(width_)) &&
+					y == std::clamp(y, static_cast<int16_t>(0), static_cast<int16_t>(height_)))
+					// Стираем символ с экрана в той точке, где его больше не будет
+					currentIt->print(x, y, ' ');
+				if constexpr (_Direction == Global::Direction::upToDown) {
+					y++;
 				}
-				for (; std::next(currentIt) != Symbols_.end(); currentIt++) {
-					// Так же необходимо сместить в обратную сторону символы и их цвета
-					currentIt->setColor(std::next(currentIt)->getColor());
-					currentIt->setSymbol(std::next(currentIt)->getSymbol());
+				else if constexpr (_Direction == Global::Direction::downToUp) {
+					y--;
 				}
-				// сгенерировать последнему новый символ
-				currentIt->setSymbol(generateRandomSymbol());
-				currentIt->setColor(generateColor());
-				steps--;
+				else if constexpr (_Direction == Global::Direction::leftToRight) {
+					x++;
+				}
+				else if constexpr (_Direction == Global::Direction::rightToLeft) {
+					x--;
+				}
+			}
+			for (; std::next(currentIt) != Symbols_.end(); currentIt++) {
+				// Так же необходимо сместить в обратную сторону символы и их цвета
+				currentIt->setColor(std::next(currentIt)->getColor());
+				currentIt->setSymbol(std::next(currentIt)->getSymbol());
+			}
+			// сгенерировать последнему новый символ
+			currentIt->setSymbol(generateRandomSymbol());
+			currentIt->setColor(generateColor());
+			if constexpr (_Direction == Global::Direction::upToDown) {
+				stepsY--;
+			}
+			else if constexpr (_Direction == Global::Direction::downToUp) {
+				stepsY++;
+			}
+			else if constexpr (_Direction == Global::Direction::leftToRight) {
+				stepsX--;
+			}
+			else if constexpr (_Direction == Global::Direction::rightToLeft) {
+				stepsX++;
 			}
 		}
 	}
 
-	uint16_t getX() const {
-		return static_cast<uint16_t>(x_);
+	int16_t getX() const {
+		return static_cast<int16_t>(x_);
 	}
 
-	uint16_t getY() const {
-		return static_cast<uint16_t>(y_);
+	int16_t getY() const {
+		return static_cast<int16_t>(y_);
 	}
 
 	// Печатает те символы, которые находятся внутри экрана
-	void print(uint16_t width, uint16_t height) {
+	void print(int16_t width, int16_t height) {
 		// Обновляем данные о высоте и ширине экрана
 		width_ = { width };
 		height_ = { height };
@@ -119,12 +195,12 @@ public:
 		// Проходим по всем символам
 		for (auto& Node : Symbols_) {
 			// Узнаём позицию, где фактически должен быть отображён символ
-			uint16_t xSymbolPosition{ static_cast<uint16_t>(x_ + Node.getXOffset()) };
-			uint16_t ySymbolPosition{ static_cast<uint16_t>(y_ + Node.getYOffset()) };
+			int16_t xSymbolPosition{ static_cast<int16_t>(x_ + Node.getXOffset()) };
+			int16_t ySymbolPosition{ static_cast<int16_t>(y_ + Node.getYOffset()) };
 
 			// Если эта позиция находится в пределах экрана
-			if (xSymbolPosition == std::clamp(xSymbolPosition, static_cast<uint16_t>(0), width_) &&
-				ySymbolPosition == std::clamp(ySymbolPosition, static_cast<uint16_t>(0), height_))
+			if (xSymbolPosition == std::clamp(xSymbolPosition, static_cast<int16_t>(0), width_) &&
+				ySymbolPosition == std::clamp(ySymbolPosition, static_cast<int16_t>(0), height_))
 				// То печатаем символ
 				Node.print(x_, y_);
 			// Сбрасываем курсор

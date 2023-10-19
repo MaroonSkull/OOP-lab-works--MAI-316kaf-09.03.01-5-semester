@@ -3,6 +3,8 @@
 #include <AppManager.hpp>
 #include <thread>
 
+// TODO: https://learn.microsoft.com/en-us/windows/console/writeconsoleoutput
+
 int main() {
 	// Конфигурируем типы, которые будут относиться ко времени
 	using namespace std::chrono; // используем пространство имён библиотеки <chrono>
@@ -71,10 +73,12 @@ int main() {
 		}
 	}
 	catch (const std::exception& e) {
+		Global::resetConsoleCursorPos<int>();
 		std::cerr << "Стандартное исключение: " << e.what() << std::endl;
 		return -1;
 	}
 	catch (...) {
+		Global::resetConsoleCursorPos<int>();
 		std::cerr << "Неожиданное исключение!" << std::endl;
 		return -2;
 	}

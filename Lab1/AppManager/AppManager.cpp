@@ -15,6 +15,7 @@ AppManager::AppManager() {
 		epilepsy_ = false;
 	}
 	catch (...) {
+		Global::resetConsoleCursorPos<int>();
 		std::cerr << "Исключение в AppManager()!" << std::endl;
 		throw;
 	}
@@ -35,8 +36,8 @@ void AppManager::updateScreen(double dt) {
 		auto y{ it->getY() };
 
 		// если координаты начала линии скрылись за пределами отображаемой области
-		if (x != std::clamp(x, static_cast<uint16_t>(0), width_) ||
-			y != std::clamp(y, static_cast<uint16_t>(0), height_)) {
+		if (x != std::clamp(x, static_cast<int16_t>(0), width_) ||
+			y != std::clamp(y, static_cast<int16_t>(0), height_)) {
 			// удаляем линию
 			it = LineList_.erase(it);
 		}
@@ -51,7 +52,7 @@ void AppManager::updateScreen(double dt) {
 }
 
 void AppManager::addLine() {
-	LineList_.push_back(Line(width_, height_, length_, epilepsy_));
+	LineList_.push_back(Line<Global::myDirection>(width_, height_, length_, epilepsy_));
 }
 
 void AppManager::clearScreen() {
@@ -66,7 +67,7 @@ void AppManager::clearScreen() {
 #endif
 }
 
-uint8_t AppManager::getFrequency() const {
+int8_t AppManager::getFrequency() const {
 	return freq_;
 }
 
@@ -75,27 +76,29 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 
 	for (;;)
 		try {
-		using namespace std::literals; // operator ""s
+			using namespace std::literals; // operator ""s
 
-		std::string inp;
+			std::string inp;
 
-		std::cout << "Включить " << msg << "? (Y/N): " << std::endl;
-		std::getline(std::cin, inp); // fetch user input, save into inp
+			std::cout << "Включить " << msg << "? (Y/N): " << std::endl;
+			std::getline(std::cin, inp); // fetch user input, save into inp
 
-		if (std::cin.fail()) throw std::invalid_argument("Ввод не удалось интерпретировать!"); // Скорее всего, это исключение вообще никогда не возникнет
-		if ((inp != "Y" && inp != "N")) throw std::invalid_argument("Введённое значение ("s + inp + ") не подходит!");
+			if (std::cin.fail()) throw std::invalid_argument("Ввод не удалось интерпретировать!"); // Скорее всего, это исключение вообще никогда не возникнет
+			if ((inp != "Y" && inp != "N")) throw std::invalid_argument("Введённое значение ("s + inp + ") не подходит!");
 
-		// В этот момент inp гарантированно содержит либо "Y", либо "N",
-		// достаточно условия только на одно из состояний
-		return (inp == "Y") ? true : false;
-	}
-	catch (const std::exception& e) {
-		std::cout << e.what() << std::endl;
-	}
-	catch (...) {
-		std::cout << "Неизвестная критическая ошибка!" << std::endl;
-		throw;
-	}
+			// В этот момент inp гарантированно содержит либо "Y", либо "N",
+			// достаточно условия только на одно из состояний
+			return (inp == "Y") ? true : false;
+		}
+		catch (const std::exception& e) {
+			Global::resetConsoleCursorPos<int>();
+			std::cerr << e.what() << std::endl;
+		}
+		catch (...) {
+			Global::resetConsoleCursorPos<int>();
+			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
+			throw;
+		}
 }
 
 void AppManager::getConsoleInfo() {
@@ -109,7 +112,7 @@ void AppManager::getConsoleInfo() {
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-	width_ = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+	width_ = csbi.srWindow.Right - csbi.srWindow.Left;
 	height_ = csbi.srWindow.Bottom - csbi.srWindow.Top;
 #else
 	// Можно добавить обработку для иных ОС, или сделать возможным мануальный ввод размеров через argc, argv

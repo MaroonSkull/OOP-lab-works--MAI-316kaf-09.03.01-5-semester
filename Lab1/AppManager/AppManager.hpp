@@ -22,15 +22,15 @@ concept Integral = std::is_integral_v<T>;
 class AppManager {
 private:
 	// Используем минимально возможные типы
-	uint16_t width_{};
-	uint16_t height_{};
+	int16_t width_{};
+	int16_t height_{};
 
-	uint8_t freq_{};
-	uint8_t speed_{};
-	uint8_t length_{};
+	int8_t freq_{};
+	int8_t speed_{};
+	int8_t length_{};
 	bool epilepsy_{};
 
-	std::list<Line> LineList_;
+	std::list<Line<Global::myDirection>> LineList_;
 
 	// Валидирует ввод, чтобы введённое число находилось на интервале [min, max]
 	template <Integral _Ty>
@@ -68,10 +68,12 @@ private:
 			return integer;
 		}
 		catch (const std::exception& e) {
-			std::cout << e.what() << std::endl;
+			Global::resetConsoleCursorPos<int>();
+			std::cerr << e.what() << std::endl;
 		}
 		catch (...) {
-			std::cout << "Неизвестная критическая ошибка!" << std::endl;
+			Global::resetConsoleCursorPos<int>();
+			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
 			throw;
 		}
 	}
@@ -90,5 +92,5 @@ public:
 
 	void addLine();
 
-	uint8_t getFrequency() const;
+	int8_t getFrequency() const;
 };
