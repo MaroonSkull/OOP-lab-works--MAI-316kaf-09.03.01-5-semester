@@ -1,13 +1,13 @@
-#include <AppManager.hpp>
+п»ї#include <AppManager.hpp>
 
 AppManager::AppManager() {
 	try {
 		getConsoleInfo();
 		
-		/*freq_ = getIntegralFromConsole("частоту появления линий", 1, 30);
-		speed_ = getIntegralFromConsole("скорость линий", 1, 30);
-		length_ = getIntegralFromConsole("длину линий", 1, 30);
-		epilepsy_ = getConfirmFromConsole("режим эпилепсии");*/
+		/*freq_ = getIntegralFromConsole("С‡Р°СЃС‚РѕС‚Сѓ РїРѕСЏРІР»РµРЅРёСЏ Р»РёРЅРёР№", 1, 30);
+		speed_ = getIntegralFromConsole("СЃРєРѕСЂРѕСЃС‚СЊ Р»РёРЅРёР№", 1, 30);
+		length_ = getIntegralFromConsole("РґР»РёРЅСѓ Р»РёРЅРёР№", 1, 30);
+		epilepsy_ = getConfirmFromConsole("СЂРµР¶РёРј СЌРїРёР»РµРїСЃРёРё");*/
 
 		freq_ = 5;
 		speed_ = 20;
@@ -16,39 +16,39 @@ AppManager::AppManager() {
 	}
 	catch (...) {
 		Global::resetConsoleCursorPos<int>();
-		std::cerr << "Исключение в AppManager()!" << std::endl;
+		std::cerr << "РСЃРєР»СЋС‡РµРЅРёРµ РІ AppManager()!" << std::endl;
 		throw;
 	}
 }
 
-// dt - прошедшее время в секундах
+// dt - РїСЂРѕС€РµРґС€РµРµ РІСЂРµРјСЏ РІ СЃРµРєСѓРЅРґР°С…
 void AppManager::updateScreen(double dt) {
-	// Проверяем, не изменились ли размеры консоли?
+	// РџСЂРѕРІРµСЂСЏРµРј, РЅРµ РёР·РјРµРЅРёР»РёСЃСЊ Р»Рё СЂР°Р·РјРµСЂС‹ РєРѕРЅСЃРѕР»Рё?
 	getConsoleInfo();
 
-	// Для каждой линии
+	// Р”Р»СЏ РєР°Р¶РґРѕР№ Р»РёРЅРёРё
 	for (auto it = LineList_.begin(); it != LineList_.end();) {
-		// сдвигаем линию туда, где она должна была оказаться с такой скоростью через такое время
+		// СЃРґРІРёРіР°РµРј Р»РёРЅРёСЋ С‚СѓРґР°, РіРґРµ РѕРЅР° РґРѕР»Р¶РЅР° Р±С‹Р»Р° РѕРєР°Р·Р°С‚СЊСЃСЏ СЃ С‚Р°РєРѕР№ СЃРєРѕСЂРѕСЃС‚СЊСЋ С‡РµСЂРµР· С‚Р°РєРѕРµ РІСЂРµРјСЏ
 		it->move(speed_ * dt);
 
-		// получаем координаты начала линии
+		// РїРѕР»СѓС‡Р°РµРј РєРѕРѕСЂРґРёРЅР°С‚С‹ РЅР°С‡Р°Р»Р° Р»РёРЅРёРё
 		auto x{ it->getX() };
 		auto y{ it->getY() };
 
-		// если координаты начала линии скрылись за пределами отображаемой области
+		// РµСЃР»Рё РєРѕРѕСЂРґРёРЅР°С‚С‹ РЅР°С‡Р°Р»Р° Р»РёРЅРёРё СЃРєСЂС‹Р»РёСЃСЊ Р·Р° РїСЂРµРґРµР»Р°РјРё РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕР№ РѕР±Р»Р°СЃС‚Рё
 		if (x != std::clamp(x, static_cast<int16_t>(0), width_) ||
 			y != std::clamp(y, static_cast<int16_t>(0), height_)) {
-			// удаляем линию
+			// СѓРґР°Р»СЏРµРј Р»РёРЅРёСЋ
 			it = LineList_.erase(it);
 		}
 		else
 			it++;
 	}
-	// после окончания основной логики, очищаем экран
-	clearScreen(); // Это решение годится только для низкого FPS, < ~15, либо для двойной буферизации
-	// Выводим все линии в порядке их появления (от старых к новым)
+	// РїРѕСЃР»Рµ РѕРєРѕРЅС‡Р°РЅРёСЏ РѕСЃРЅРѕРІРЅРѕР№ Р»РѕРіРёРєРё, РѕС‡РёС‰Р°РµРј СЌРєСЂР°РЅ
+	clearScreen(); // Р­С‚Рѕ СЂРµС€РµРЅРёРµ РіРѕРґРёС‚СЃСЏ С‚РѕР»СЊРєРѕ РґР»СЏ РЅРёР·РєРѕРіРѕ FPS, < ~15, Р»РёР±Рѕ РґР»СЏ РґРІРѕР№РЅРѕР№ Р±СѓС„РµСЂРёР·Р°С†РёРё
+	// Р’С‹РІРѕРґРёРј РІСЃРµ Р»РёРЅРёРё РІ РїРѕСЂСЏРґРєРµ РёС… РїРѕСЏРІР»РµРЅРёСЏ (РѕС‚ СЃС‚Р°СЂС‹С… Рє РЅРѕРІС‹Рј)
 	for (auto& node : LineList_)
-		node.print(width_, height_); // Передаём текущие размеры экрана
+		node.print(width_, height_); // РџРµСЂРµРґР°С‘Рј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР°
 }
 
 void AppManager::addLine() {
@@ -80,14 +80,14 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 
 			std::string inp;
 
-			std::cout << "Включить " << msg << "? (Y/N): " << std::endl;
+			std::cout << "Р’РєР»СЋС‡РёС‚СЊ " << msg << "? (Y/N): " << std::endl;
 			std::getline(std::cin, inp); // fetch user input, save into inp
 
-			if (std::cin.fail()) throw std::invalid_argument("Ввод не удалось интерпретировать!"); // Скорее всего, это исключение вообще никогда не возникнет
-			if ((inp != "Y" && inp != "N")) throw std::invalid_argument("Введённое значение ("s + inp + ") не подходит!");
+			if (std::cin.fail()) throw std::invalid_argument("Р’РІРѕРґ РЅРµ СѓРґР°Р»РѕСЃСЊ РёРЅС‚РµСЂРїСЂРµС‚РёСЂРѕРІР°С‚СЊ!"); // РЎРєРѕСЂРµРµ РІСЃРµРіРѕ, СЌС‚Рѕ РёСЃРєР»СЋС‡РµРЅРёРµ РІРѕРѕР±С‰Рµ РЅРёРєРѕРіРґР° РЅРµ РІРѕР·РЅРёРєРЅРµС‚
+			if ((inp != "Y" && inp != "N")) throw std::invalid_argument("Р’РІРµРґС‘РЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ ("s + inp + ") РЅРµ РїРѕРґС…РѕРґРёС‚!");
 
-			// В этот момент inp гарантированно содержит либо "Y", либо "N",
-			// достаточно условия только на одно из состояний
+			// Р’ СЌС‚РѕС‚ РјРѕРјРµРЅС‚ inp РіР°СЂР°РЅС‚РёСЂРѕРІР°РЅРЅРѕ СЃРѕРґРµСЂР¶РёС‚ Р»РёР±Рѕ "Y", Р»РёР±Рѕ "N",
+			// РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ СѓСЃР»РѕРІРёСЏ С‚РѕР»СЊРєРѕ РЅР° РѕРґРЅРѕ РёР· СЃРѕСЃС‚РѕСЏРЅРёР№
 			return (inp == "Y") ? true : false;
 		}
 		catch (const std::exception& e) {
@@ -96,7 +96,7 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 		}
 		catch (...) {
 			Global::resetConsoleCursorPos<int>();
-			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
+			std::cerr << "РќРµРёР·РІРµСЃС‚РЅР°СЏ РєСЂРёС‚РёС‡РµСЃРєР°СЏ РѕС€РёР±РєР°!" << std::endl;
 			throw;
 		}
 }
@@ -115,10 +115,10 @@ void AppManager::getConsoleInfo() {
 	width_ = csbi.srWindow.Right - csbi.srWindow.Left;
 	height_ = csbi.srWindow.Bottom - csbi.srWindow.Top;
 #else
-	// Можно добавить обработку для иных ОС, или сделать возможным мануальный ввод размеров через argc, argv
+	// РњРѕР¶РЅРѕ РґРѕР±Р°РІРёС‚СЊ РѕР±СЂР°Р±РѕС‚РєСѓ РґР»СЏ РёРЅС‹С… РћРЎ, РёР»Рё СЃРґРµР»Р°С‚СЊ РІРѕР·РјРѕР¶РЅС‹Рј РјР°РЅСѓР°Р»СЊРЅС‹Р№ РІРІРѕРґ СЂР°Р·РјРµСЂРѕРІ С‡РµСЂРµР· argc, argv
 	width_ = 0;
 	height_ = 0;
 #endif
 	if (width_ == 0 || height_ == 0)
-		throw std::runtime_error{ "AppManager::getConsoleInfo() : Не удалось определить размер консоли!" };
+		throw std::runtime_error{ "AppManager::getConsoleInfo() : РќРµ СѓРґР°Р»РѕСЃСЊ РѕРїСЂРµРґРµР»РёС‚СЊ СЂР°Р·РјРµСЂ РєРѕРЅСЃРѕР»Рё!" };
 }

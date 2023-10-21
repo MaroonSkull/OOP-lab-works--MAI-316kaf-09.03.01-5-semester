@@ -1,4 +1,4 @@
-#pragma once
+п»ї#pragma once
 
 #ifdef __linux__ 
 	#include <sys/ioctl.h>
@@ -21,7 +21,7 @@ concept Integral = std::is_integral_v<T>;
 
 class AppManager {
 private:
-	// Используем минимально возможные типы
+	// РСЃРїРѕР»СЊР·СѓРµРј РјРёРЅРёРјР°Р»СЊРЅРѕ РІРѕР·РјРѕР¶РЅС‹Рµ С‚РёРїС‹
 	int16_t width_{};
 	int16_t height_{};
 
@@ -32,11 +32,11 @@ private:
 
 	std::list<Line<Global::myDirection, Global::myLineType>> LineList_;
 
-	// Валидирует ввод, чтобы введённое число находилось на интервале [min, max]
+	// Р’Р°Р»РёРґРёСЂСѓРµС‚ РІРІРѕРґ, С‡С‚РѕР±С‹ РІРІРµРґС‘РЅРЅРѕРµ С‡РёСЃР»Рѕ РЅР°С…РѕРґРёР»РѕСЃСЊ РЅР° РёРЅС‚РµСЂРІР°Р»Рµ [min, max]
 	template <Integral _Ty>
 	_Ty getIntegralFromConsole(std::string_view msg, _Ty min, _Ty max) {
 		auto getIntegralFromString = [](std::string inp) {
-			// Выбираем функцию, которой будем получать целое из строки
+			// Р’С‹Р±РёСЂР°РµРј С„СѓРЅРєС†РёСЋ, РєРѕС‚РѕСЂРѕР№ Р±СѓРґРµРј РїРѕР»СѓС‡Р°С‚СЊ С†РµР»РѕРµ РёР· СЃС‚СЂРѕРєРё
 			std::function<_Ty(const std::string&, size_t*, int)> convert;
 			if constexpr (std::is_same_v<_Ty, long long>) {
 				convert = static_cast<_Ty(*)(const std::string&, size_t*, int)>(std::stoll);
@@ -57,13 +57,13 @@ private:
 			std::string inp;
 			_Ty integer;
 
-			std::cout << "Пожалуйста, введите " << msg << " в интервале [" << min << ", " << max << "]: ";
+			std::cout << "РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РІРІРµРґРёС‚Рµ " << msg << " РІ РёРЅС‚РµСЂРІР°Р»Рµ [" << min << ", " << max << "]: ";
 			std::getline(std::cin, inp); // fetch user input, save into inp
 			integer = getIntegralFromString(inp);
 
-			if (std::cin.fail()) throw std::invalid_argument("Ввод не удалось интерпретировать как число!"); // Скорее всего, это исключение вообще никогда не возникнет
-			if (integer < min) throw std::out_of_range("Введённое значение ("s + std::to_string(integer) + ") меньше минимально возможного (" + std::to_string(min) + ")!");
-			if (integer > max) throw std::out_of_range("Введённое значение ("s + std::to_string(integer) + ") больше максимально возможного (" + std::to_string(max) + ")!");
+			if (std::cin.fail()) throw std::invalid_argument("Р’РІРѕРґ РЅРµ СѓРґР°Р»РѕСЃСЊ РёРЅС‚РµСЂРїСЂРµС‚РёСЂРѕРІР°С‚СЊ РєР°Рє С‡РёСЃР»Рѕ!"); // РЎРєРѕСЂРµРµ РІСЃРµРіРѕ, СЌС‚Рѕ РёСЃРєР»СЋС‡РµРЅРёРµ РІРѕРѕР±С‰Рµ РЅРёРєРѕРіРґР° РЅРµ РІРѕР·РЅРёРєРЅРµС‚
+			if (integer < min) throw std::out_of_range("Р’РІРµРґС‘РЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ ("s + std::to_string(integer) + ") РјРµРЅСЊС€Рµ РјРёРЅРёРјР°Р»СЊРЅРѕ РІРѕР·РјРѕР¶РЅРѕРіРѕ (" + std::to_string(min) + ")!");
+			if (integer > max) throw std::out_of_range("Р’РІРµРґС‘РЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ ("s + std::to_string(integer) + ") Р±РѕР»СЊС€Рµ РјР°РєСЃРёРјР°Р»СЊРЅРѕ РІРѕР·РјРѕР¶РЅРѕРіРѕ (" + std::to_string(max) + ")!");
 
 			return integer;
 		}
@@ -73,7 +73,7 @@ private:
 		}
 		catch (...) {
 			Global::resetConsoleCursorPos<int>();
-			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
+			std::cerr << "РќРµРёР·РІРµСЃС‚РЅР°СЏ РєСЂРёС‚РёС‡РµСЃРєР°СЏ РѕС€РёР±РєР°!" << std::endl;
 			throw;
 		}
 	}

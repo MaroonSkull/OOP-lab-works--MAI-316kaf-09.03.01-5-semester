@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <Symbol.hpp>
 #include <Global.hpp>
