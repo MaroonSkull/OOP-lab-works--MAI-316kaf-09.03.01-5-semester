@@ -21,13 +21,23 @@
 
 ## Как скачать
 
-### 1. Скачать в формате .zip вверху текущей страницы
+<details>
+	<summary>1. Скачать в формате .zip вверху текущей страницы</summary>
 
 Распаковать в удобное место и переходить к разделу "[Как собрать](https://github.com/MaroonSkull/OOP-lab-works--MAI-316kaf-09.03.01-5-semester/tree/Lab1/README.md#%D0%BA%D0%B0%D0%BA-%D1%81%D0%BE%D0%B1%D1%80%D0%B0%D1%82%D1%8C)"
+</details>
 
-### 2. Использовать нативные средства Visual Studio
+<details>
+	<summary>2. Использовать нативные средства Visual Studio</summary>
 
 При открытии программы выбрать справа Clone Repository, указать [эту ссылку](https://github.com/MaroonSkull/OOP-lab-works--MAI-316kaf-09.03.01-5-semester), в панели инструментов выбрать git->manage branches, развернуть remotes/origin, ПКМ по Lab1->checkout, перейти в Solution explorer и выбрать единственную папку с проектом.
+</details>
+
+<details>
+	<summary>3. Использовать Git bash или GitHub Desktop</summary>
+
+Но мне лень сейчас описывать эти варианты, так что как-нибудь сами
+</details>
 
 ---
 
@@ -60,7 +70,65 @@
 
 ## Как настроить
 
-Если будут проблемы с кодировкой файлов, 
+- Если будут проблемы с кодировкой файлов в Visual Studio, в Solution explorer выберите файл, ПКМ->Open with->C++ source code editor (with encoding) -> выберите UTF-8 или оставьте auto-detect
+
+В файле globals.hpp укажите параметры, которые соответсвуют вашему варианту, это такие переменные как `myDirection`, `myLineType`, `...`(смена вариантов режима эпилепсии пока не готова)
+
+Попробуйте запустить проект
+
+Если всё запускается, то настало время удалять всё лишнее *для вашего варианта* из кода. Выполните поиск `if constexpr` по всему решению (<kbd>Ctrl</kbd> + <kbd>F</kbd>, Entire solution).
+Удалите все условные блоки, которые не совпадают с вашим вариантом. Как только останется только то, что вам нужно, можете убрать сами условия `if`. Можно их не убирать, но будет подозрительно. От `constexpr` после `if` тоже лучше избавиться, если не хотите рассказывать на сдаче лабы про compiletime metaprogramming.
+
+<details>
+	<summary>Пример для line, upToDawn</summary>
+
+	*Пример метода из класса Line*
+До
+```C++
+void move(double distance) {
+	
+	// Получаем текущую позицию начала линии
+	int16_t x{ static_cast<int16_t>(x_) };
+	int16_t y{ static_cast<int16_t>(y_) };
+	// Накапливаем смещение
+	if constexpr (_Direction == Global::Direction::upToDown) {
+		y_ += distance;
+	}
+	else if constexpr (_Direction == Global::Direction::downToUp) {
+		y_ -= distance;
+	}
+	else if constexpr (_Direction == Global::Direction::leftToRight) {
+		x_ += distance;
+	}
+	else if constexpr (_Direction == Global::Direction::rightToLeft) {
+		x_ -= distance;
+	}
+		
+	// Вычисляем, на сколько позиций нам надо сместиться
+	int16_t stepsY = static_cast<int16_t>(y_) - y; // вертикально
+	int16_t stepsX = static_cast<int16_t>(x_) - x; // горизонтально
+	...
+}
+```
+После
+```C++
+void move(double distance) {
+	
+	// Получаем текущую позицию начала линии
+	int16_t x{ static_cast<int16_t>(x_) };
+	int16_t y{ static_cast<int16_t>(y_) };
+	// Накапливаем смещение
+	y_ += distance;
+		
+	// Вычисляем, на сколько позиций нам надо сместиться
+	int16_t stepsY = static_cast<int16_t>(y_) - y; // вертикально
+	int16_t stepsX = static_cast<int16_t>(x_) - x; // горизонтально
+	...
+}
+```
+</details>
+
+Если Вы, уважаемый мой одногруппник, справитесь и удалите все условия, то можно удалить и enum class из файла globals.hpp, что уменьшит подозрительность (В идеале, конечно, ещё и от файла globals.hpp избавиться)
 
 ---
 
