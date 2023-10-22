@@ -3,7 +3,12 @@
 #
 cmake_minimum_required (VERSION 3.12)
 
-project ("TheMatrix_Beginning")
+project ("TheMatrix_Beginning"
+    VERSION 1.0
+    DESCRIPTION "Универсальное решение первой лабораторной работы по ООП"
+    HOMEPAGE_URL "https://github.com/MaroonSkull/OOP-lab-works--MAI-316kaf-09.03.01-5-semester/tree/Lab1"
+    LANGUAGES CXX
+)
 
 if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.29.30129 AND CMAKE_VERSION VERSION_GREATER 3.20.3)
     # this change happened in CMake 3.20.4
