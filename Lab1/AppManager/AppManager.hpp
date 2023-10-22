@@ -68,11 +68,11 @@ private:
 			return integer;
 		}
 		catch (const std::exception& e) {
-			Global::resetConsoleCursorPos<int>();
+			Global::setConsoleCursorPos(0, 0);
 			std::cerr << e.what() << std::endl;
 		}
 		catch (...) {
-			Global::resetConsoleCursorPos<int>();
+			Global::setConsoleCursorPos(0, 0);
 			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
 			throw;
 		}

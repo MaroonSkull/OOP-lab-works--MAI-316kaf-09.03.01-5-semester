@@ -64,7 +64,7 @@ int main() {
 			// Отображаем текущий FPS
 			/* Global::setConsoleColor(15);
 			std::cout << "FPS = " << 1. / (frameTime.count() * timeToSeconds) << std::endl;
-			Global::resetConsoleCursorPos<int>(); */
+			Global::setConsoleCursorPos(0, 0); */
 
 			// Если успели быстрее, ждём начала следующего кадра, чтобы не греть кремний
 			constexpr Duration minTimePerFrame{ 1. / (Global::maxFPS * timeToSeconds) };
@@ -73,12 +73,12 @@ int main() {
 		}
 	}
 	catch (const std::exception& e) {
-		Global::resetConsoleCursorPos<int>();
+		Global::setConsoleCursorPos(0, 0);
 		std::cerr << "Стандартное исключение: " << e.what() << std::endl;
 		return -1;
 	}
 	catch (...) {
-		Global::resetConsoleCursorPos<int>();
+		Global::setConsoleCursorPos(0, 0);
 		std::cerr << "Неожиданное исключение!" << std::endl;
 		return -2;
 	}

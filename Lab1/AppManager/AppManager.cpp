@@ -12,7 +12,7 @@ AppManager::AppManager() {
 		clearScreen();
 	}
 	catch (...) {
-		Global::resetConsoleCursorPos<int>();
+		Global::setConsoleCursorPos(0, 0);
 		std::cerr << "Исключение в AppManager()!" << std::endl;
 		throw;
 	}
@@ -35,7 +35,7 @@ void AppManager::updateScreen(double dt) {
 		// если координаты начала линии скрылись за пределами отображаемой области
 		if (x != std::clamp(x, static_cast<int16_t>(0), width_) ||
 			y != std::clamp(y, static_cast<int16_t>(0), height_)) {
-			// удаляем линию
+			// удаляем линию и обновляем итератор
 			it = LineList_.erase(it);
 		}
 		else
@@ -63,7 +63,7 @@ void AppManager::clearScreen() {
 	DWORD written, cells = s.dwSize.X * s.dwSize.Y;
 	FillConsoleOutputCharacter(Global::hConsole, ' ', cells, Global::tl, &written);
 	FillConsoleOutputAttribute(Global::hConsole, s.wAttributes, cells, Global::tl, &written);
-	Global::resetConsoleCursorPos<int>();
+	Global::setConsoleCursorPos(0, 0);
 #endif
 }
 
@@ -91,11 +91,11 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 			return (inp == "Y") ? true : false;
 		}
 		catch (const std::exception& e) {
-			Global::resetConsoleCursorPos<int>();
+			Global::setConsoleCursorPos(0, 0);
 			std::cerr << e.what() << std::endl;
 		}
 		catch (...) {
-			Global::resetConsoleCursorPos<int>();
+			Global::setConsoleCursorPos(0, 0);
 			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
 			throw;
 		}

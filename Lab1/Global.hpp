@@ -23,16 +23,15 @@ namespace Global {
 		line
 	};
 
-	static const Direction myDirection = Direction::upToDown;
-	static const LineType myLineType = LineType::rhombus;
-	static const EpilepsyType myEpilepsyType = EpilepsyType::line;
-	static const bool enableClearScreen = false;
+	static constexpr auto myDirection{ Direction::upToDown };
+	static constexpr auto myLineType{ LineType::rhombus };
+	static constexpr auto myEpilepsyType{ EpilepsyType::line };
+	static constexpr bool enableClearScreen{ false };
 
 
 	const static COORD tl = { 0, 0 };
 	const static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	// TODO: убрать шаблон
 	template <typename T>
 	void setConsoleColor(T ForgC) {
 		WORD wColor = ForgC & 0x0F;
@@ -43,11 +42,6 @@ namespace Global {
 	void setConsoleCursorPos(T x, T y) {
 		COORD pos = { x, y };
 		SetConsoleCursorPosition(hConsole, pos);
-	}
-
-	template <typename T>
-	void resetConsoleCursorPos() {
-		SetConsoleCursorPosition(hConsole, tl);
 	}
 
 	template <typename T>

@@ -453,6 +453,6 @@ void Line::print(int16_t width, int16_t height) {
 			// То печатаем символ
 			Node.print(x_, y_);
 		// Сбрасываем курсор
-		Global::resetConsoleCursorPos<int>();
+		Global::setConsoleCursorPos(0, 0);
 	}
 }
