@@ -34,13 +34,13 @@ namespace Global {
 
 	template <typename T>
 	void setConsoleColor(T ForgC) {
-		WORD wColor = ForgC & 0x0F;
+		WORD wColor = static_cast<WORD>(ForgC & 0x0F);
 		SetConsoleTextAttribute(hConsole, wColor);
 	}
 
 	template <typename T>
 	void setConsoleCursorPos(T x, T y) {
-		COORD pos = { x, y };
+		COORD pos = { static_cast<SHORT>(x), static_cast<SHORT>(y) };
 		SetConsoleCursorPosition(hConsole, pos);
 	}
 

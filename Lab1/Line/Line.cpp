@@ -451,7 +451,7 @@ void Line::print(int16_t width, int16_t height) {
 		if (xSymbolPosition == std::clamp(xSymbolPosition, static_cast<int16_t>(0), width_) &&
 			ySymbolPosition == std::clamp(ySymbolPosition, static_cast<int16_t>(0), height_))
 			// То печатаем символ
-			Node.print(x_, y_);
+			Node.print(static_cast<int16_t>(x_), static_cast<int16_t>(y_));
 		// Сбрасываем курсор
 		Global::setConsoleCursorPos(0, 0);
 	}
