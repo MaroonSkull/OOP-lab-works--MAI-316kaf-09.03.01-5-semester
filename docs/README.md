@@ -31,7 +31,7 @@
 <details>
 	<summary>1. Скачать в формате .zip вверху текущей страницы</summary>
 
-Распаковать в удобное место и перейти к разделу "[Как собрать](https://github.com/MaroonSkull/OOP-lab-works--MAI-316kaf-09.03.01-5-semester/tree/Lab1/README.md#%D0%BA%D0%B0%D0%BA-%D1%81%D0%BE%D0%B1%D1%80%D0%B0%D1%82%D1%8C)"
+Распаковать в удобное место и перейти к разделу "[Как собрать](https://github.com/MaroonSkull/OOP-lab-works--MAI-316kaf-09.03.01-5-semester/tree/Lab1#%D0%BA%D0%B0%D0%BA-%D1%81%D0%BE%D0%B1%D1%80%D0%B0%D1%82%D1%8C)"
 </details>
 
 <details>
@@ -129,8 +129,3 @@ void move(double distance) {
 </details>
 
 Если Вы, уважаемый мой одногруппник, справитесь и удалите все условия, то стоит удалить и все enum class из файла globals.hpp, что уменьшит подозрительность (В идеале, конечно, ещё и от файла globals.hpp избавиться, или оставить там только функции)
-
----
-
-## Как это работает
-
