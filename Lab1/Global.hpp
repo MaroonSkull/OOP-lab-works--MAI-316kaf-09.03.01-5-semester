@@ -18,13 +18,21 @@ namespace Global {
 		rhombus
 	};
 
-	static const Direction myDirection = Direction::rightToLeft;
+	enum class EpilepsyType {
+		symbol,
+		line
+	};
+
+	static const Direction myDirection = Direction::upToDown;
 	static const LineType myLineType = LineType::rhombus;
+	static const EpilepsyType myEpilepsyType = EpilepsyType::line;
+	static const bool enableClearScreen = false;
 
-	const static COORD tl = { 0,0 };
+
+	const static COORD tl = { 0, 0 };
 	const static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	//const static HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 
+	// TODO: убрать шаблон
 	template <typename T>
 	void setConsoleColor(T ForgC) {
 		WORD wColor = ForgC & 0x0F;
@@ -46,7 +54,7 @@ namespace Global {
 	T getRandomUniformIntDistribution(T min, T max) {
 		static std::random_device rd_;
 		static std::ranlux24_base engine_(rd_());
-		static std::uniform_int_distribution<T> uniformDist_(min, max);
+		std::uniform_int_distribution<T> uniformDist_(min, max);
 		return uniformDist_(engine_);
 	}
 }

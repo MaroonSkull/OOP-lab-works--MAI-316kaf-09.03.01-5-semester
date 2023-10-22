@@ -17,18 +17,9 @@ public:
 	Symbol(int16_t offsetX, int16_t offsetY, char symbol, int8_t color)
 		: offsetX_{ offsetX }, offsetY_{ offsetY }, symbol_{ symbol }, color_{ color } {}
 
-	void print(int16_t baseX, int16_t baseY) {
-		print(baseX, baseY, symbol_);
-	}
+	void print(int16_t baseX, int16_t baseY);
 
-	void print(int16_t baseX, int16_t baseY, char symbol) {
-		int16_t consoleX{ static_cast<int16_t>(baseX) + offsetX_ };
-		int16_t consoleY{ static_cast<int16_t>(baseY) + offsetY_ };
-
-		Global::setConsoleCursorPos(consoleX, consoleY);
-		Global::setConsoleColor(color_);
-		std::cout << symbol;
-	}
+	void print(int16_t baseX, int16_t baseY, char symbol);
 
 	// getters & setters
 	int16_t getXOffset() const {

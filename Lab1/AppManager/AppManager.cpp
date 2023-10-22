@@ -4,15 +4,12 @@ AppManager::AppManager() {
 	try {
 		getConsoleInfo();
 		
-		/*freq_ = getIntegralFromConsole("частоту появления линий", 1, 30);
+		freq_ = getIntegralFromConsole("частоту появления линий", 1, 30);
 		speed_ = getIntegralFromConsole("скорость линий", 1, 30);
 		length_ = getIntegralFromConsole("длину линий", 1, 30);
-		epilepsy_ = getConfirmFromConsole("режим эпилепсии");*/
+		epilepsy_ = getConfirmFromConsole("режим эпилепсии");
 
-		freq_ = 5;
-		speed_ = 20;
-		length_ = 18;
-		epilepsy_ = false;
+		clearScreen();
 	}
 	catch (...) {
 		Global::resetConsoleCursorPos<int>();
@@ -25,6 +22,9 @@ AppManager::AppManager() {
 void AppManager::updateScreen(double dt) {
 	// Проверяем, не изменились ли размеры консоли?
 	getConsoleInfo();
+
+	if (LineList_.empty())
+		return;
 
 	// Для каждой линии
 	for (auto it = LineList_.begin(); it != LineList_.end();) {
@@ -44,15 +44,18 @@ void AppManager::updateScreen(double dt) {
 		else
 			it++;
 	}
+	
 	// после окончания основной логики, очищаем экран
-	clearScreen(); // Это решение годится только для низкого FPS, < ~15, либо для двойной буферизации
+	if constexpr (Global::enableClearScreen)
+		clearScreen(); // Это решение годится только для низкого FPS, < ~15, либо для двойной буферизации
+	
 	// Выводим все линии в порядке их появления (от старых к новым)
 	for (auto& node : LineList_)
 		node.print(width_, height_); // Передаём текущие размеры экрана
 }
 
 void AppManager::addLine() {
-	LineList_.push_back(Line<Global::myDirection, Global::myLineType>(width_, height_, length_, epilepsy_));
+	LineList_.push_back(Line(width_, height_, length_, epilepsy_));
 }
 
 void AppManager::clearScreen() {

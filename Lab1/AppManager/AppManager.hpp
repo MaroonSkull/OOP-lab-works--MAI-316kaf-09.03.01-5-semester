@@ -30,7 +30,7 @@ private:
 	int8_t length_{};
 	bool epilepsy_{};
 
-	std::list<Line<Global::myDirection, Global::myLineType>> LineList_;
+	std::list<Line> LineList_;
 
 	// Валидирует ввод, чтобы введённое число находилось на интервале [min, max]
 	template <Integral _Ty>
