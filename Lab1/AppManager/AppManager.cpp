@@ -23,9 +23,6 @@ void AppManager::updateScreen(double dt) {
 	// Проверяем, не изменились ли размеры консоли?
 	getConsoleInfo();
 
-	if (LineList_.empty())
-		return;
-
 	// Для каждой линии
 	for (auto it = LineList_.begin(); it != LineList_.end();) {
 		// сдвигаем линию туда, где она должна была оказаться с такой скоростью через такое время

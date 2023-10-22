@@ -1,8 +1,7 @@
 ﻿#include <Line.hpp>
 
 char Line::generateSymbol(bool isSpace) {
-	auto random = static_cast<int32_t>(Global::getRandomUniformIntDistribution(33, 126));
-	return isSpace ? ' ' : random;
+	return isSpace ? ' ' : static_cast<char>(Global::getRandomUniformIntDistribution(33, 126));;
 }
 
 int8_t Line::generateColor() {
@@ -311,9 +310,6 @@ void Line::move(double distance) {
 			continue;
 		}
 		// Мы уже добавили всё, что только могли, теперь остаётся только перемещать уже существующие символы
-		if (Symbols_.empty())
-			return;
-
 		auto currentIt = Symbols_.begin();
 		for (; y != static_cast<int16_t>(y_) || x != static_cast<int16_t>(x_);) {
 			// Если позиция, где фактически должен быть стёрт символ, внутри экрана
