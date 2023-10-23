@@ -1,14 +1,11 @@
 ﻿#include <Symbol.hpp>
 
-void Symbol::print(int16_t baseX, int16_t baseY) {
-	print(baseX, baseY, symbol_);
+void Symbol::print(int16_t x, int16_t y) {
+	print(x, y, symbol_);
 }
 
-void Symbol::print(int16_t baseX, int16_t baseY, char symbol) {
-	int16_t consoleX{ static_cast<int16_t>(baseX) + offsetX_ };
-	int16_t consoleY{ static_cast<int16_t>(baseY) + offsetY_ };
-
-	Global::setConsoleCursorPos(consoleX, consoleY);
+void Symbol::print(int16_t x, int16_t y, char symbol) {
+	Global::setConsoleCursorPos(x, y);
 	Global::setConsoleColor(color_);
 	std::cout << symbol;
 }

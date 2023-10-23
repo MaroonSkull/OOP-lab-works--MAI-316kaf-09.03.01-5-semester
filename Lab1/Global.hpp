@@ -1,9 +1,15 @@
 ﻿#pragma once
+
 #include <random>
+
+#include <Windows.h>
+
+
 
 namespace Global {
 
 	constexpr auto maxFPS = 60.0;
+	static constexpr bool showFPS{ false };
 
 	enum class Direction {
 		leftToRight,
@@ -26,7 +32,7 @@ namespace Global {
 	static constexpr auto myDirection{ Direction::upToDown };
 	static constexpr auto myLineType{ LineType::rhombus };
 	static constexpr auto myEpilepsyType{ EpilepsyType::line };
-	static constexpr bool enableClearScreen{ false };
+	static constexpr bool enableClearScreen{ true };
 
 
 	const static COORD tl = { 0, 0 };

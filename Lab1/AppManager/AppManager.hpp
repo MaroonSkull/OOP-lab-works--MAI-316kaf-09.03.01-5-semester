@@ -1,17 +1,13 @@
 ﻿#pragma once
 
-#ifdef __linux__ 
-	#include <sys/ioctl.h>
-	#include <stdio.h>
-	#include <unistd.h>
-#elif _WIN32
-	#include <windows.h>
-#endif
 
 #include <concepts>
 #include <functional>
 #include <string>
 #include <iostream>
+
+#include <Windows.h>
+
 #include <Line.hpp>
 
 
@@ -48,7 +44,7 @@ private:
 				convert = static_cast<int(*)(const std::string&, size_t*, int)>(std::stoi);
 			}
 			return convert(inp, nullptr, 10);
-		};
+			};
 
 		for (;;)
 			try {
@@ -68,10 +64,12 @@ private:
 			return integer;
 		}
 		catch (const std::exception& e) {
+			clearScreen();
 			Global::setConsoleCursorPos(0, 0);
 			std::cerr << e.what() << std::endl;
 		}
 		catch (...) {
+			clearScreen();
 			Global::setConsoleCursorPos(0, 0);
 			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
 			throw;
@@ -80,7 +78,7 @@ private:
 
 	bool getConfirmFromConsole(std::string_view msg);
 
-	void getConsoleInfo();
+	bool updateConsoleSizes();
 
 	void clearScreen();
 
