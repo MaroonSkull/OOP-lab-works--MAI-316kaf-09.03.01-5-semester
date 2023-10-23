@@ -19,7 +19,6 @@ Line::Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
 	toggle_ = (width_ + height_) % 2; // это позволяет нам выбирать, для зигзага сначала идёт левый или правый символ
 	// а для ромба - идёт сначала один символ или сразу два.
 
-	// TODO: перенести это декартово произведение на std::variant + std::visit, правда речь про RTTI, а не про compile-time вычисления
 	// тут x_ и y_ зависит от направления
 	if constexpr (Global::myDirection == Global::Direction::upToDown) {
 		y_ = 0;
@@ -311,44 +310,46 @@ void Line::move(double distance) {
 		}
 		// Мы уже добавили всё, что только могли, теперь остаётся только перемещать уже существующие символы
 		auto currentIt = Symbols_.begin();
-		for (; y != static_cast<int16_t>(y_) || x != static_cast<int16_t>(x_);) {
-			// Если позиция, где фактически должен быть стёрт символ, внутри экрана
-			if (x == std::clamp(x, static_cast<int16_t>(0), static_cast<int16_t>(width_)) &&
-				y == std::clamp(y, static_cast<int16_t>(0), static_cast<int16_t>(height_))) {
-				if constexpr (Global::myLineType == Global::LineType::line)
-					// Стираем символ с экрана в той точке, где его больше не будет
-					currentIt->print(x, y, ' ');
-				else if constexpr (Global::myLineType == Global::LineType::zigzag) {
-					// стираем оба символа, что должны быть в начале (нас не волнует стирание пробельных символов)
-					currentIt->print(x, y, ' ');
-					currentIt++;
-					currentIt->print(x, y, ' ');
-					currentIt--;
+		// Пытаемся стереть символы только если отключена полная очистка экрана
+		if constexpr (!Global::enableClearScreen)
+			for (; y != static_cast<int16_t>(y_) || x != static_cast<int16_t>(x_);) {
+				// Если позиция, где фактически должен быть стёрт символ, внутри экрана
+				if (x == std::clamp(x, static_cast<int16_t>(0), static_cast<int16_t>(width_)) &&
+					y == std::clamp(y, static_cast<int16_t>(0), static_cast<int16_t>(height_))) {
+					if constexpr (Global::myLineType == Global::LineType::line)
+						// Стираем символ с экрана в той точке, где его больше не будет
+						currentIt->print(x, y, ' ');
+					else if constexpr (Global::myLineType == Global::LineType::zigzag) {
+						// стираем оба символа, что должны быть в начале (нас не волнует стирание пробельных символов)
+						currentIt->print(x, y, ' ');
+						currentIt++;
+						currentIt->print(x, y, ' ');
+						currentIt--;
+					}
+					else if constexpr (Global::myLineType == Global::LineType::rhombus) {
+						// стираем три начальных символа
+						currentIt->print(x, y, ' ');
+						currentIt++;
+						currentIt->print(x, y, ' ');
+						currentIt++;
+						currentIt->print(x, y, ' ');
+						currentIt--;
+						currentIt--;
+					}
 				}
-				else if constexpr (Global::myLineType == Global::LineType::rhombus) {
-					// стираем три начальных символа
-					currentIt->print(x, y, ' ');
-					currentIt++;
-					currentIt->print(x, y, ' ');
-					currentIt++;
-					currentIt->print(x, y, ' ');
-					currentIt--;
-					currentIt--;
+				if constexpr (Global::myDirection == Global::Direction::upToDown) {
+					y++;
+				}
+				else if constexpr (Global::myDirection == Global::Direction::downToUp) {
+					y--;
+				}
+				else if constexpr (Global::myDirection == Global::Direction::leftToRight) {
+					x++;
+				}
+				else if constexpr (Global::myDirection == Global::Direction::rightToLeft) {
+					x--;
 				}
 			}
-			if constexpr (Global::myDirection == Global::Direction::upToDown) {
-				y++;
-			}
-			else if constexpr (Global::myDirection == Global::Direction::downToUp) {
-				y--;
-			}
-			else if constexpr (Global::myDirection == Global::Direction::leftToRight) {
-				x++;
-			}
-			else if constexpr (Global::myDirection == Global::Direction::rightToLeft) {
-				x--;
-			}
-		}
 		// Так же необходимо сместить в обратную сторону символы и их цвета
 		if constexpr (Global::myLineType == Global::LineType::line) {
 			if (Symbols_.size() >= 1) {
@@ -443,15 +444,22 @@ void Line::print(int16_t width, int16_t height) {
 
 	// Проходим по всем символам
 	for (auto& Node : Symbols_) {
-		// Узнаём позицию, где фактически должен быть отображён символ
-		int16_t xSymbolPosition{ static_cast<int16_t>(x_ + Node.getXOffset()) };
-		int16_t ySymbolPosition{ static_cast<int16_t>(y_ + Node.getYOffset()) };
+		// Округляем позицию начала линии до целых
+		int16_t xHeadPosition{ static_cast<int16_t>(x_) };
+		int16_t yHeadPosition{ static_cast<int16_t>(y_) };
 
-		// Если эта позиция находится в пределах экрана
-		if (xSymbolPosition == std::clamp(xSymbolPosition, static_cast<int16_t>(0), width_) &&
-			ySymbolPosition == std::clamp(ySymbolPosition, static_cast<int16_t>(0), height_))
+		// Узнаём позицию, где фактически должен быть отображён символ
+		int16_t xSymbolPosition{ xHeadPosition + Node.getXOffset() };
+		int16_t ySymbolPosition{ yHeadPosition + Node.getYOffset() };
+
+		// Если эти позиции находятся в пределах экрана
+		if (xSymbolPosition == std::clamp(xSymbolPosition, 0i16, width_) &&
+			ySymbolPosition == std::clamp(ySymbolPosition, 0i16, height_) &&
+			xHeadPosition == std::clamp(xHeadPosition, 0i16, width_) &&
+			yHeadPosition == std::clamp(yHeadPosition, 0i16, height_))
 			// То печатаем символ
-			Node.print(static_cast<int16_t>(x_), static_cast<int16_t>(y_));
+			Node.print(xSymbolPosition, ySymbolPosition);
+
 		// Сбрасываем курсор
 		Global::setConsoleCursorPos(0, 0);
 	}

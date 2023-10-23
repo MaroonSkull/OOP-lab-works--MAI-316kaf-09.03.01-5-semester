@@ -1,10 +1,12 @@
 ﻿#pragma once
 
-#include "Symbol.h"
-#include "Global.h"
 
 #include <iostream>
 #include <list>
+
+#include "Global.h"
+#include "Symbol.h"
+
 
 
 class Line {
@@ -19,10 +21,10 @@ private:
 
 	bool toggle_{};
 
-	int16_t width_;
-	int16_t height_;
+	int16_t width_{};
+	int16_t height_{};
 	int8_t length_{};
-	bool epilepsy_;
+	bool epilepsy_{};
 	int8_t lineColor_{}; // можно вынести в LineTraits, но мне не жалко лишний байт
 
 	char generateSymbol(bool isSpace = false);
@@ -40,7 +42,7 @@ public:
 	// Печатает те символы, которые находятся внутри экрана
 	void print(int16_t width, int16_t height);
 
-	// геттеры и сеттеры можно указывать в .hpp файлах
+	// геттеры и сеттеры можно указывать в заголовочных файлах
 	int16_t getX() const {
 		return static_cast<int16_t>(x_);
 	}

@@ -1,11 +1,13 @@
 ﻿#pragma once
 
-#include <windows.h>
 
 #include <concepts>
 #include <functional>
 #include <string>
 #include <iostream>
+
+#include <Windows.h>
+
 #include "Line.h"
 
 
@@ -42,7 +44,7 @@ private:
 				convert = static_cast<int(*)(const std::string&, size_t*, int)>(std::stoi);
 			}
 			return convert(inp, nullptr, 10);
-		};
+			};
 
 		for (;;)
 			try {
@@ -76,7 +78,7 @@ private:
 
 	bool getConfirmFromConsole(std::string_view msg);
 
-	void getConsoleInfo();
+	bool updateConsoleSizes();
 
 	void clearScreen();
 

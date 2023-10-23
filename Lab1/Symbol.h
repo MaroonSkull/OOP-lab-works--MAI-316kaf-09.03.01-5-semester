@@ -1,8 +1,12 @@
 ﻿#pragma once
 
+
 #include <iostream>
+
 #include <Windows.h>
+
 #include "Global.h"
+
 
 
 class Symbol {
@@ -17,11 +21,12 @@ public:
 	Symbol(int16_t offsetX, int16_t offsetY, char symbol, int8_t color)
 		: offsetX_{ offsetX }, offsetY_{ offsetY }, symbol_{ symbol }, color_{ color } {}
 
-	void print(int16_t baseX, int16_t baseY);
+	void print(int16_t x, int16_t y);
 
-	void print(int16_t baseX, int16_t baseY, char symbol);
+	void print(int16_t x, int16_t y, char symbol);
 
-	// getters & setters
+	// Геттеры и сеттеры расположены в хэдере, чтобы инлайнить функцию с простой логикой
+	// это позволяет компилятору оптимизировать код, вовсе убирая накладные расходы на вызов функции
 	int16_t getXOffset() const {
 		return offsetX_;
 	}
