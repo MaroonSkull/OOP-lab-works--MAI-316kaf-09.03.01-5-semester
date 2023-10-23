@@ -4,7 +4,7 @@
 cmake_minimum_required (VERSION 3.12)
 
 project ("TheMatrix_Beginning"
-    VERSION 1.0
+    VERSION 1.1
     DESCRIPTION "Универсальное решение первой лабораторной работы по ООП"
     HOMEPAGE_URL "https://github.com/MaroonSkull/OOP-lab-works--MAI-316kaf-09.03.01-5-semester/tree/Lab1"
     LANGUAGES CXX
