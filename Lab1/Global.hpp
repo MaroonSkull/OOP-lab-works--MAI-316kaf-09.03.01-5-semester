@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <random>
+#include <Windows.h>
 
 namespace Global {
 
@@ -24,9 +25,8 @@ namespace Global {
 	};
 
 	static constexpr auto myDirection{ Direction::upToDown };
-	static constexpr auto myLineType{ LineType::rhombus };
-	static constexpr auto myEpilepsyType{ EpilepsyType::line };
-	static constexpr bool enableClearScreen{ false };
+	static constexpr auto myLineType{ LineType::line };
+	static constexpr auto myEpilepsyType{ EpilepsyType::symbol };
 
 
 	const static COORD tl = { 0, 0 };

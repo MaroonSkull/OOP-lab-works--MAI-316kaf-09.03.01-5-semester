@@ -6,9 +6,6 @@
 
 class Buffer {
 public:
-	// двумерный массив CHAR_INFO - структуры WinAPI, содержащей в себе символ и атрибуты (используем только атрибуты цвета)
-	using type = std::vector< std::vector< CHAR_INFO > >;
-
 	// Изменяет размеры буфера
 	void resize(int16_t width, int16_t height);
 
@@ -18,10 +15,11 @@ public:
 	// Печатает весь буфер в консоль
 	void print();
 
-	type& getBuffer() {
-		return buffer_;
-	}
+	// Предоставляет доступ к конкретному символу
+	CHAR_INFO& getChar(int16_t consoleX, int16_t consoleY);
 private:
-	type buffer_;
+	// вектор линейно хранит двумерный массив CHAR_INFO - структуры WinAPI, содержащей в себе символ и атрибуты (используем только атрибуты цвета)
+	std::vector< CHAR_INFO > buffer_;
+	COORD Sizes_{};
 	SMALL_RECT destinationRect_{};
 };

@@ -1,15 +1,13 @@
 ﻿#include <Symbol.hpp>
 
-void Symbol::print(Buffer& Buff, int16_t baseX, int16_t baseY) {
-	print(Buff, baseX, baseY, symbol_);
+void Symbol::print(Buffer& Buff, int16_t x, int16_t y) {
+	print(Buff, x, y, symbol_);
 }
 
-void Symbol::print(Buffer& Buff, int16_t baseX, int16_t baseY, char symbol) {
-	int16_t consoleX{ static_cast<int16_t>(baseX) + offsetX_ };
-	int16_t consoleY{ static_cast<int16_t>(baseY) + offsetY_ };
+void Symbol::print(Buffer& Buff, int16_t x, int16_t y, char symbol) {
 
-	auto& sym{ Buff.getBuffer().at(consoleX).at(consoleY) };
+	auto& [sym, color] = Buff.getChar(x, y);
 	
-	sym.Attributes = static_cast<WORD>(color_ & 0x0F);
-	sym.Char.AsciiChar = symbol;
+	sym.AsciiChar = symbol;
+	color = static_cast<WORD>(color_ & 0x0F);
 }

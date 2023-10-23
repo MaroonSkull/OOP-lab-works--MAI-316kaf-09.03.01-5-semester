@@ -3,16 +3,11 @@
 AppManager::AppManager() {
 	try {
 		updateConsoleSizes(); // инициируем height_, width_
-		/*
+		
 		freq_ = getIntegralFromConsole("частоту появления линий", 1, 30);
 		speed_ = getIntegralFromConsole("скорость линий", 1, 30);
 		length_ = getIntegralFromConsole("длину линий", 1, 30);
-		epilepsy_ = getConfirmFromConsole("режим эпилепсии"); */
-
-		freq_ = 2;
-		speed_ = 5;
-		length_ = 10;
-		epilepsy_ = false;
+		epilepsy_ = getConfirmFromConsole("режим эпилепсии");
 
 		clearScreen();
 	}
@@ -28,7 +23,7 @@ AppManager::AppManager() {
 void AppManager::updateScreen(Buffer &Buff, double dt) {
 	// Проверяем, не изменились ли размеры консоли?
 	updateConsoleSizes();
-	Buff.resize(width_+1, height_+1);
+	Buff.resize(width_, height_);
 
 	// Для каждой линии
 	for (auto it = LineList_.begin(); it != LineList_.end();) {
@@ -49,10 +44,6 @@ void AppManager::updateScreen(Buffer &Buff, double dt) {
 			it++;
 	}
 	
-	// после окончания основной логики, очищаем экран
-	if constexpr (Global::enableClearScreen)
-		clearScreen(); // Это решение годится только для низкого FPS, < ~15, либо для двойной буферизации
-	
 	// Выводим все линии в порядке их появления (от старых к новым)
 	for (auto& node : LineList_)
 		node.print(Buff, width_, height_); // Передаём текущие размеры экрана
@@ -63,15 +54,12 @@ void AppManager::addLine() {
 }
 
 void AppManager::clearScreen() {
-#ifdef __linux__
-#elif _WIN32
 	CONSOLE_SCREEN_BUFFER_INFO s;
 	GetConsoleScreenBufferInfo(Global::hConsole, &s);
 	DWORD written, cells = s.dwSize.X * s.dwSize.Y;
 	FillConsoleOutputCharacter(Global::hConsole, ' ', cells, Global::tl, &written);
 	FillConsoleOutputAttribute(Global::hConsole, s.wAttributes, cells, Global::tl, &written);
 	Global::setConsoleCursorPos(0, 0);
-#endif
 }
 
 int8_t AppManager::getFrequency() const {
@@ -111,7 +99,6 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 }
 
 bool AppManager::updateConsoleSizes() {
-	
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	GetConsoleScreenBufferInfo(Global::hConsole, &csbi);
 

@@ -1,11 +1,12 @@
 ﻿#include <iostream>
 #include <chrono>
-#include <AppManager.hpp>
-#include <Buffer.hpp>
 #include <thread>
 #include <array>
 
-// TODO: https://learn.microsoft.com/en-us/windows/console/writeconsoleoutput
+#include <Buffer.hpp>
+#include <AppManager.hpp>
+
+
 
 int main() {
 	// Конфигурируем типы, которые будут относиться ко времени
@@ -20,11 +21,12 @@ int main() {
 
 	// Используем двойную буфферизацию
 	std::array<Buffer, 2> Buffers{};
+	//Buffer Buff;
 
 	// Устанавливаем вывод на русском языке
 	setlocale(LC_ALL, "Russian");
 
-	SetConsoleActiveScreenBuffer(Global::hConsole);
+	// SetConsoleActiveScreenBuffer(Global::hConsole);
 
 	try {
 		// Создаём класс, управляющий консолью и отрисовкой
@@ -38,10 +40,11 @@ int main() {
 
 		TimePoint additionTime = Clock::now(); // время, когда мы в последний раз добавляли новую линию
 		TimePoint frameStartTime = Clock::now(); // как много времени прошло с начала прошлого кадра
-		// Бесконечный цикл отрисовки матрицы
-		for (auto Buff{ Buffers.begin() };;Buff++) {
-			if (Buff == Buffers.end()) Buff = Buffers.begin();
-			Buff->clear();
+		// Бесконечный цикл отрисовки матрицы со сменой буферов
+		for (auto BuffIt{ Buffers.begin() }; ; BuffIt++) {
+			// Берём новый буффер, в который будем рисовать
+			if (BuffIt == Buffers.end()) BuffIt = Buffers.begin();
+			BuffIt->clear();
 
 			// вычисляем всё время, затраченное на прошлый кадр
 			Duration timeFromLastScreenUpdate{ Clock::now() - frameStartTime };
@@ -50,10 +53,10 @@ int main() {
 			frameStartTime = Clock::now();
 
 			// Отправляем запрос на изменение состояния и отрисовку в выбранный буффер
-			Application.updateScreen(*Buff, timeFromLastScreenUpdate.count() * timeToSeconds);
+			Application.updateScreen(*BuffIt, timeFromLastScreenUpdate.count() * timeToSeconds);
 
 			// Отображаем наш буффер
-			Buff->print();
+			BuffIt->print();
 
 			// Если время, прошедшее с прошлого добавления линии больше, чем период
 			Duration timeSinceLastAddition{ Clock::now() - additionTime };
@@ -73,9 +76,9 @@ int main() {
 			Duration frameTime{ Clock::now() - frameStartTime };
 			
 			// Отображаем текущий FPS
-			/* Global::setConsoleColor(15);
+			/*Global::setConsoleColor(15);
 			std::cout << "FPS = " << 1. / (frameTime.count() * timeToSeconds) << std::endl;
-			Global::setConsoleCursorPos(0, 0); */
+			Global::setConsoleCursorPos(0, 0);*/
 
 			// Если успели быстрее, ждём начала следующего кадра, чтобы не греть кремний
 			constexpr Duration minTimePerFrame{ 1. / (Global::maxFPS * timeToSeconds) };
@@ -93,8 +96,6 @@ int main() {
 		std::cerr << "Неожиданное исключение!" << std::endl;
 		return -2;
 	}
-
-	CloseHandle(Global::hConsole);
 
 	return 0;
 }

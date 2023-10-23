@@ -1,12 +1,13 @@
 ﻿#pragma once
 
-#include <Symbol.hpp>
-#include <Global.hpp>
-#include <Buffer.hpp>
 
 #include <iostream>
 #include <list>
-#include <functional>
+
+#include <Global.hpp>
+#include <Buffer.hpp>
+#include <Symbol.hpp>
+
 
 
 class Line {
@@ -23,7 +24,7 @@ private:
 
 	int16_t width_;
 	int16_t height_;
-	int8_t length_{};
+	int8_t length_;
 	bool epilepsy_;
 	int8_t lineColor_{}; // можно вынести в LineTraits, но мне не жалко лишний байт
 

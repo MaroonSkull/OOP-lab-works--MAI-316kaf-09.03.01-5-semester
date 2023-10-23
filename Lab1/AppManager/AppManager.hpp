@@ -1,17 +1,11 @@
 ﻿#pragma once
 
-#ifdef __linux__ 
-	#include <sys/ioctl.h>
-	#include <stdio.h>
-	#include <unistd.h>
-#elif _WIN32
-	#include <windows.h>
-#endif
-
 #include <concepts>
-#include <functional>
 #include <string>
 #include <iostream>
+
+#include <Windows.h>
+
 #include <Line.hpp>
 #include <Buffer.hpp>
 
