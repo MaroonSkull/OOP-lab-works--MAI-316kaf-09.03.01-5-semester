@@ -19,7 +19,6 @@ Line::Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
 	toggle_ = (width_ + height_) % 2; // это позволяет нам выбирать, для зигзага сначала идёт левый или правый символ
 	// а для ромба - идёт сначала один символ или сразу два.
 
-	// TODO: перенести это декартово произведение на std::variant + std::visit, правда речь про RTTI, а не про compile-time вычисления
 	// тут x_ и y_ зависит от направления
 	if constexpr (Global::myDirection == Global::Direction::upToDown) {
 		y_ = 0;

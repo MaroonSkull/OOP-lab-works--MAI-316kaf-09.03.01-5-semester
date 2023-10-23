@@ -1,10 +1,15 @@
 ﻿#pragma once
+
 #include <random>
+
 #include <Windows.h>
+
+
 
 namespace Global {
 
 	constexpr auto maxFPS = 60.0;
+	static constexpr bool showFPS{ false };
 
 	enum class Direction {
 		leftToRight,

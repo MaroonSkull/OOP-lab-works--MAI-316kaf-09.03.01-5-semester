@@ -1,9 +1,14 @@
 ﻿#pragma once
 
+
 #include <iostream>
+
 #include <Windows.h>
+
 #include <Global.hpp>
 #include <Buffer.hpp>
+
+
 
 class Symbol {
 private:
@@ -17,11 +22,12 @@ public:
 	Symbol(int16_t offsetX, int16_t offsetY, char symbol, int8_t color)
 		: offsetX_{ offsetX }, offsetY_{ offsetY }, symbol_{ symbol }, color_{ color } {}
 
-	void print(Buffer& Buff, int16_t baseX, int16_t baseY);
+	void print(Buffer& Buff, int16_t x, int16_t y);
 
-	void print(Buffer& Buff, int16_t baseX, int16_t baseY, char symbol);
+	void print(Buffer& Buff, int16_t x, int16_t y, char symbol);
 
-	// getters & setters
+	// Геттеры и сеттеры расположены в хэдере, чтобы инлайнить функцию с простой логикой
+	// это позволяет компилятору оптимизировать код, вовсе убирая накладные расходы на вызов функции
 	int16_t getXOffset() const {
 		return offsetX_;
 	}

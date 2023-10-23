@@ -1,6 +1,8 @@
 ﻿#pragma once
 
+
 #include <concepts>
+#include <functional>
 #include <string>
 #include <iostream>
 
@@ -43,7 +45,7 @@ private:
 				convert = static_cast<int(*)(const std::string&, size_t*, int)>(std::stoi);
 			}
 			return convert(inp, nullptr, 10);
-		};
+			};
 
 		for (;;)
 			try {
@@ -85,7 +87,7 @@ public:
 	AppManager();
 	~AppManager() = default;
 
-	void updateScreen(Buffer &Buff, double dt);
+	void updateScreen(Buffer& Buff, double dt);
 
 	void addLine();
 

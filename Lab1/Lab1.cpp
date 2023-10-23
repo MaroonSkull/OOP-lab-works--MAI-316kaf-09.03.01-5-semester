@@ -26,14 +26,13 @@ int main() {
 	// Устанавливаем вывод на русском языке
 	setlocale(LC_ALL, "Russian");
 
-	// SetConsoleActiveScreenBuffer(Global::hConsole);
-
 	try {
 		// Создаём класс, управляющий консолью и отрисовкой
 		AppManager Application;
 
 		// Количество запросов на создание новой линии в секунду
 		auto freq = Application.getFrequency();
+
 		// как часто будем создавать новую линию
 		// T = 1/f, вспоминаем физику. + конвертируем секунды в нужную нам единицу изменения времени
 		Duration period{ 1. / (static_cast<double>(freq) * timeToSeconds) };
@@ -76,9 +75,11 @@ int main() {
 			Duration frameTime{ Clock::now() - frameStartTime };
 			
 			// Отображаем текущий FPS
-			/*Global::setConsoleColor(15);
-			std::cout << "FPS = " << 1. / (frameTime.count() * timeToSeconds) << std::endl;
-			Global::setConsoleCursorPos(0, 0);*/
+			if constexpr (Global::showFPS) {
+				Global::setConsoleColor(15);
+				std::cout << "FPS = " << 1. / (frameTime.count() * timeToSeconds) << std::endl;
+				Global::setConsoleCursorPos(0, 0);
+			}
 
 			// Если успели быстрее, ждём начала следующего кадра, чтобы не греть кремний
 			constexpr Duration minTimePerFrame{ 1. / (Global::maxFPS * timeToSeconds) };
