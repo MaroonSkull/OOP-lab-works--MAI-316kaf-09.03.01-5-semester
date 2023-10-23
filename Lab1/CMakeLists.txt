@@ -25,12 +25,14 @@ add_dependencies (${PROJECT_NAME} Globals)
 
 target_include_directories(Globals INTERFACE ./)
 
+add_subdirectory ("Buffer")
 add_subdirectory ("Symbol")
 add_subdirectory ("Line")
 add_subdirectory ("AppManager")
 
 # link libraries
 foreach (library
+    Buffer
     AppManager
     Line
     Symbol

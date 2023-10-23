@@ -89,7 +89,7 @@ void Line::addSymbol(bool isSpace) {
 	Symbols_.push_back(Symbol(xOffsetCounter_, yOffsetCounter_, symbol, color));
 }
 
-void Line::move(double distance) {
+void Line::move(Buffer &Buff, double distance) {
 
 	// Получаем текущую позицию начала линии
 	int16_t x{ static_cast<int16_t>(x_) };
@@ -317,21 +317,21 @@ void Line::move(double distance) {
 				y == std::clamp(y, static_cast<int16_t>(0), static_cast<int16_t>(height_))) {
 				if constexpr (Global::myLineType == Global::LineType::line)
 					// Стираем символ с экрана в той точке, где его больше не будет
-					currentIt->print(x, y, ' ');
+					currentIt->print(Buff, x, y, ' ');
 				else if constexpr (Global::myLineType == Global::LineType::zigzag) {
 					// стираем оба символа, что должны быть в начале (нас не волнует стирание пробельных символов)
-					currentIt->print(x, y, ' ');
+					currentIt->print(Buff, x, y, ' ');
 					currentIt++;
-					currentIt->print(x, y, ' ');
+					currentIt->print(Buff, x, y, ' ');
 					currentIt--;
 				}
 				else if constexpr (Global::myLineType == Global::LineType::rhombus) {
 					// стираем три начальных символа
-					currentIt->print(x, y, ' ');
+					currentIt->print(Buff, x, y, ' ');
 					currentIt++;
-					currentIt->print(x, y, ' ');
+					currentIt->print(Buff, x, y, ' ');
 					currentIt++;
-					currentIt->print(x, y, ' ');
+					currentIt->print(Buff, x, y, ' ');
 					currentIt--;
 					currentIt--;
 				}
@@ -436,7 +436,7 @@ void Line::move(double distance) {
 	}
 }
 
-void Line::print(int16_t width, int16_t height) {
+void Line::print(Buffer& Buff, int16_t width, int16_t height) {
 	// Обновляем данные о высоте и ширине экрана
 	width_ = { width };
 	height_ = { height };
@@ -451,7 +451,7 @@ void Line::print(int16_t width, int16_t height) {
 		if (xSymbolPosition == std::clamp(xSymbolPosition, static_cast<int16_t>(0), width_) &&
 			ySymbolPosition == std::clamp(ySymbolPosition, static_cast<int16_t>(0), height_))
 			// То печатаем символ
-			Node.print(static_cast<int16_t>(x_), static_cast<int16_t>(y_));
+			Node.print(Buff, static_cast<int16_t>(x_), static_cast<int16_t>(y_));
 		// Сбрасываем курсор
 		Global::setConsoleCursorPos(0, 0);
 	}

@@ -2,6 +2,7 @@
 
 #include <Symbol.hpp>
 #include <Global.hpp>
+#include <Buffer.hpp>
 
 #include <iostream>
 #include <list>
@@ -36,10 +37,10 @@ public:
 	// Добавляет ровно один символ в линию
 	void addSymbol(bool isSpace = false);
 
-	void move(double distance);
+	void move(Buffer& Buff, double distance);
 
 	// Печатает те символы, которые находятся внутри экрана
-	void print(int16_t width, int16_t height);
+	void print(Buffer &Buff, int16_t width, int16_t height);
 
 	// геттеры и сеттеры можно указывать в .hpp файлах
 	int16_t getX() const {

@@ -7,6 +7,9 @@ add_dependencies (${PROJECT_NAME} Symbol)
 
 target_include_directories (Symbol PUBLIC ./)
 
-target_link_libraries (Symbol PUBLIC Globals)
+target_link_libraries (Symbol
+	PUBLIC Globals
+	PUBLIC Buffer
+)
 
 target_compile_features (Symbol PUBLIC cxx_std_20)

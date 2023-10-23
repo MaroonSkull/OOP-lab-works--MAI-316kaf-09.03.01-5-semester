@@ -13,6 +13,7 @@
 #include <string>
 #include <iostream>
 #include <Line.hpp>
+#include <Buffer.hpp>
 
 
 
@@ -68,10 +69,12 @@ private:
 			return integer;
 		}
 		catch (const std::exception& e) {
+			clearScreen();
 			Global::setConsoleCursorPos(0, 0);
 			std::cerr << e.what() << std::endl;
 		}
 		catch (...) {
+			clearScreen();
 			Global::setConsoleCursorPos(0, 0);
 			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
 			throw;
@@ -80,7 +83,7 @@ private:
 
 	bool getConfirmFromConsole(std::string_view msg);
 
-	void getConsoleInfo();
+	bool updateConsoleSizes();
 
 	void clearScreen();
 
@@ -88,7 +91,7 @@ public:
 	AppManager();
 	~AppManager() = default;
 
-	void updateScreen(double dt);
+	void updateScreen(Buffer &Buff, double dt);
 
 	void addLine();
 

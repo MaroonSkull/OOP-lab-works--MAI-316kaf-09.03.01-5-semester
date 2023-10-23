@@ -1,7 +1,9 @@
 ﻿#include <iostream>
 #include <chrono>
 #include <AppManager.hpp>
+#include <Buffer.hpp>
 #include <thread>
+#include <array>
 
 // TODO: https://learn.microsoft.com/en-us/windows/console/writeconsoleoutput
 
@@ -15,6 +17,9 @@ int main() {
 
 	// константа для конвертирования времени. Размерность = [секунды/TimeAccuracy]
 	constexpr auto timeToSeconds = static_cast<double>(TimeAccuracy::num) / static_cast<double>(TimeAccuracy::den);
+
+	// Используем двойную буфферизацию
+	std::array<Buffer, 2> Buffers{};
 
 	// Устанавливаем вывод на русском языке
 	setlocale(LC_ALL, "Russian");
@@ -34,15 +39,21 @@ int main() {
 		TimePoint additionTime = Clock::now(); // время, когда мы в последний раз добавляли новую линию
 		TimePoint frameStartTime = Clock::now(); // как много времени прошло с начала прошлого кадра
 		// Бесконечный цикл отрисовки матрицы
-		for (;;) {
+		for (auto Buff{ Buffers.begin() };;Buff++) {
+			if (Buff == Buffers.end()) Buff = Buffers.begin();
+			Buff->clear();
+
 			// вычисляем всё время, затраченное на прошлый кадр
 			Duration timeFromLastScreenUpdate{ Clock::now() - frameStartTime };
 
 			// Засекаем время начала нового кадра
 			frameStartTime = Clock::now();
 
-			// Отправляем запрос на изменение состояния и отрисовку
-			Application.updateScreen(timeFromLastScreenUpdate.count() * timeToSeconds);
+			// Отправляем запрос на изменение состояния и отрисовку в выбранный буффер
+			Application.updateScreen(*Buff, timeFromLastScreenUpdate.count() * timeToSeconds);
+
+			// Отображаем наш буффер
+			Buff->print();
 
 			// Если время, прошедшее с прошлого добавления линии больше, чем период
 			Duration timeSinceLastAddition{ Clock::now() - additionTime };

@@ -2,16 +2,22 @@
 
 AppManager::AppManager() {
 	try {
-		getConsoleInfo();
-		
+		updateConsoleSizes(); // инициируем height_, width_
+		/*
 		freq_ = getIntegralFromConsole("частоту появления линий", 1, 30);
 		speed_ = getIntegralFromConsole("скорость линий", 1, 30);
 		length_ = getIntegralFromConsole("длину линий", 1, 30);
-		epilepsy_ = getConfirmFromConsole("режим эпилепсии");
+		epilepsy_ = getConfirmFromConsole("режим эпилепсии"); */
+
+		freq_ = 2;
+		speed_ = 5;
+		length_ = 10;
+		epilepsy_ = false;
 
 		clearScreen();
 	}
 	catch (...) {
+		clearScreen();
 		Global::setConsoleCursorPos(0, 0);
 		std::cerr << "Исключение в AppManager()!" << std::endl;
 		throw;
@@ -19,14 +25,15 @@ AppManager::AppManager() {
 }
 
 // dt - прошедшее время в секундах
-void AppManager::updateScreen(double dt) {
+void AppManager::updateScreen(Buffer &Buff, double dt) {
 	// Проверяем, не изменились ли размеры консоли?
-	getConsoleInfo();
+	updateConsoleSizes();
+	Buff.resize(width_+1, height_+1);
 
 	// Для каждой линии
 	for (auto it = LineList_.begin(); it != LineList_.end();) {
 		// сдвигаем линию туда, где она должна была оказаться с такой скоростью через такое время
-		it->move(speed_ * dt);
+		it->move(Buff, speed_ * dt);
 
 		// получаем координаты начала линии
 		auto x{ it->getX() };
@@ -48,7 +55,7 @@ void AppManager::updateScreen(double dt) {
 	
 	// Выводим все линии в порядке их появления (от старых к новым)
 	for (auto& node : LineList_)
-		node.print(width_, height_); // Передаём текущие размеры экрана
+		node.print(Buff, width_, height_); // Передаём текущие размеры экрана
 }
 
 void AppManager::addLine() {
@@ -91,34 +98,34 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 			return (inp == "Y") ? true : false;
 		}
 		catch (const std::exception& e) {
+			clearScreen();
 			Global::setConsoleCursorPos(0, 0);
 			std::cerr << e.what() << std::endl;
 		}
 		catch (...) {
+			clearScreen();
 			Global::setConsoleCursorPos(0, 0);
 			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
 			throw;
 		}
 }
 
-void AppManager::getConsoleInfo() {
-#ifdef __linux__
-	struct winsize w;
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-
-	width_ = w.ws_row;
-	height_ = w.ws_col;
-#elif _WIN32
+bool AppManager::updateConsoleSizes() {
+	
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	GetConsoleScreenBufferInfo(Global::hConsole, &csbi);
 
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-	width_ = csbi.srWindow.Right - csbi.srWindow.Left;
-	height_ = csbi.srWindow.Bottom - csbi.srWindow.Top;
-#else
-	// Можно добавить обработку для иных ОС, или сделать возможным мануальный ввод размеров через argc, argv
-	width_ = 0;
-	height_ = 0;
-#endif
-	if (width_ == 0 || height_ == 0)
+	auto width{ csbi.srWindow.Right - csbi.srWindow.Left };
+	auto height{ csbi.srWindow.Bottom - csbi.srWindow.Top };
+
+	if (width == 0 || height == 0)
 		throw std::runtime_error{ "AppManager::getConsoleInfo() : Не удалось определить размер консоли!" };
+
+	if (width != width_ || height_ != height) {
+		width_ = width;
+		height_ = height;
+		return true;
+	}
+
+	return false;
 }
