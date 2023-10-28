@@ -3,36 +3,43 @@
 AppManager::AppManager() {
 	try {
 		updateConsoleSizes(); // инициируем height_, width_
-		
-		freq_ = getIntegralFromConsole("частоту появления линий", 1, 30);
-		speed_ = getIntegralFromConsole("скорость линий", 1, 30);
-		length_ = getIntegralFromConsole("длину линий", 1, 30);
-		epilepsy_ = getConfirmFromConsole("режим эпилепсии");
+
+		freq_ = getIntegralFromConsole("frequency", 1, 30);
+		speed_ = getIntegralFromConsole("speed", 1, 30);
+		length_ = getIntegralFromConsole("length", 1, 30);
+		epilepsy_ = getConfirmFromConsole("epilepsy");
 
 		clearScreen();
 	}
 	catch (...) {
 		clearScreen();
 		Global::setConsoleCursorPos(0, 0);
-		std::cerr << "Исключение в AppManager()!" << std::endl;
+		std::cerr << "Exception in AppManager()!" << std::endl;
 		throw;
 	}
 }
 
-// dt - прошедшее время в секундах
-void AppManager::updateScreen(Buffer &Buff, double dt) {
+// dt - прошедшее время
+void AppManager::updateScreen(Buffer &Buff, Global::Duration dt) {
 	// Проверяем, не изменились ли размеры консоли?
 	updateConsoleSizes();
 	Buff.resize(width_, height_);
 
 	// Для каждой линии
 	for (auto it = LineList_.begin(); it != LineList_.end();) {
+		auto &[currentLine, startTimeOpt] = *it;
 		// сдвигаем линию туда, где она должна была оказаться с такой скоростью через такое время
-		it->move(Buff, speed_ * dt);
+		auto ellapsedTime = dt;
+		if (startTimeOpt) {
+			ellapsedTime += Global::Clock::now() - startTimeOpt.value();
+			startTimeOpt = std::nullopt;
+		}
+		
+		currentLine.move(Buff, speed_ * ellapsedTime.count() * Global::timeToSeconds);
 
 		// получаем координаты начала линии
-		auto x{ it->getX() };
-		auto y{ it->getY() };
+		auto x{ currentLine.getX() };
+		auto y{ currentLine.getY() };
 
 		// если координаты начала линии скрылись за пределами отображаемой области
 		if (x != std::clamp(x, static_cast<int16_t>(0), width_) ||
@@ -43,14 +50,14 @@ void AppManager::updateScreen(Buffer &Buff, double dt) {
 		else
 			it++;
 	}
-	
+
 	// Выводим все линии в порядке их появления (от старых к новым)
-	for (auto& node : LineList_)
-		node.print(Buff, width_, height_); // Передаём текущие размеры экрана
+	for (auto &node : LineList_)
+		node.first.print(Buff, width_, height_); // Передаём текущие размеры экрана
 }
 
-void AppManager::addLine() {
-	LineList_.push_back(Line(width_, height_, length_, epilepsy_));
+void AppManager::addLine(Global::TimePoint &&additionTime) {
+	LineList_.push_back(std::make_pair(Line(width_, height_, length_, epilepsy_), additionTime));
 }
 
 void AppManager::clearScreen() {
@@ -71,31 +78,36 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 
 	for (;;)
 		try {
-			using namespace std::literals; // operator ""s
+		using namespace std::literals; // operator ""s
 
-			std::string inp;
+		std::string inp;
 
-			std::cout << "Включить " << msg << "? (Y/N): " << std::endl;
-			std::getline(std::cin, inp); // fetch user input, save into inp
+		std::cout << "Enable " << msg << "? (Y/N): " << std::endl;
+		std::getline(std::cin, inp); // fetch user input, save into inp
 
-			if (std::cin.fail()) throw std::invalid_argument("Ввод не удалось интерпретировать!"); // Скорее всего, это исключение вообще никогда не возникнет
-			if ((inp != "Y" && inp != "N")) throw std::invalid_argument("Введённое значение ("s + inp + ") не подходит!");
+		// Скорее всего, это исключение вообще никогда не возникнет
+		if (std::cin.fail()) throw std::invalid_argument("invalid argument!");
+		// Приводим строку к нижнему регистру
+		std::transform(inp.begin(), inp.end(), inp.begin(),
+			[](std::string::value_type c) { return std::tolower(c); });
+		// Если введена любая из подходящих команд
+		if ((inp != "y" && inp != "n")) throw std::invalid_argument("Entered value ("s + inp + ") is invalid!");
 
-			// В этот момент inp гарантированно содержит либо "Y", либо "N",
-			// достаточно условия только на одно из состояний
-			return (inp == "Y") ? true : false;
-		}
-		catch (const std::exception& e) {
-			clearScreen();
-			Global::setConsoleCursorPos(0, 0);
-			std::cerr << e.what() << std::endl;
-		}
-		catch (...) {
-			clearScreen();
-			Global::setConsoleCursorPos(0, 0);
-			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
-			throw;
-		}
+		// В этот момент inp гарантированно содержит либо "y", либо "n",
+		// достаточно условия только на одно из состояний
+		return (inp == "y") ? true : false;
+	}
+	catch (const std::exception &e) {
+		clearScreen();
+		Global::setConsoleCursorPos(0, 0);
+		std::cerr << e.what() << std::endl;
+	}
+	catch (...) {
+		clearScreen();
+		Global::setConsoleCursorPos(0, 0);
+		std::cerr << "Unknown critical exeption!" << std::endl;
+		throw;
+	}
 }
 
 bool AppManager::updateConsoleSizes() {
@@ -106,7 +118,7 @@ bool AppManager::updateConsoleSizes() {
 	auto height{ csbi.srWindow.Bottom - csbi.srWindow.Top };
 
 	if (width == 0 || height == 0)
-		throw std::runtime_error{ "AppManager::getConsoleInfo() : Не удалось определить размер консоли!" };
+		throw std::runtime_error{ "AppManager::getConsoleInfo() : Sizes of console is undefined!" };
 
 	if (width != width_ || height_ != height) {
 		width_ = width;

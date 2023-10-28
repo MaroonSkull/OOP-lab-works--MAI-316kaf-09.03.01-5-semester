@@ -1,10 +1,9 @@
 ﻿#pragma once
 
 
-#include <concepts>
+#include <iostream>
 #include <functional>
 #include <string>
-#include <iostream>
 
 #include <Windows.h>
 
@@ -12,9 +11,6 @@
 #include <Buffer.hpp>
 
 
-
-template<typename T>
-concept Integral = std::is_integral_v<T>;
 
 class AppManager {
 private:
@@ -27,22 +23,23 @@ private:
 	int8_t length_{};
 	bool epilepsy_{};
 
-	std::list<Line> LineList_;
+	// Хранит линию и, до первого смещения, время её создания
+	std::list<std::pair<Line, std::optional<Global::TimePoint>>> LineList_;
 
 	// Валидирует ввод, чтобы введённое число находилось на интервале [min, max]
-	template <Integral _Ty>
+	template <std::integral _Ty>
 	_Ty getIntegralFromConsole(std::string_view msg, _Ty min, _Ty max) {
 		auto getIntegralFromString = [](std::string inp) {
 			// Выбираем функцию, которой будем получать целое из строки
-			std::function<_Ty(const std::string&, size_t*, int)> convert;
+			std::function<_Ty(const std::string &, size_t *, int)> convert;
 			if constexpr (std::is_same_v<_Ty, long long>) {
-				convert = static_cast<_Ty(*)(const std::string&, size_t*, int)>(std::stoll);
+				convert = static_cast<_Ty(*)(const std::string &, size_t *, int)>(std::stoll);
 			}
 			else if constexpr (std::is_same_v<_Ty, long>) {
-				convert = static_cast<_Ty(*)(const std::string&, size_t*, int)>(std::stol);
+				convert = static_cast<_Ty(*)(const std::string &, size_t *, int)>(std::stol);
 			}
 			else {
-				convert = static_cast<int(*)(const std::string&, size_t*, int)>(std::stoi);
+				convert = static_cast<int(*)(const std::string &, size_t *, int)>(std::stoi);
 			}
 			return convert(inp, nullptr, 10);
 			};
@@ -54,17 +51,17 @@ private:
 			std::string inp;
 			_Ty integer;
 
-			std::cout << "Пожалуйста, введите " << msg << " в интервале [" << min << ", " << max << "]: ";
+			std::cout << "Please, enter " << msg << " in [" << min << ", " << max << "]: ";
 			std::getline(std::cin, inp); // fetch user input, save into inp
 			integer = getIntegralFromString(inp);
 
-			if (std::cin.fail()) throw std::invalid_argument("Ввод не удалось интерпретировать как число!"); // Скорее всего, это исключение вообще никогда не возникнет
-			if (integer < min) throw std::out_of_range("Введённое значение ("s + std::to_string(integer) + ") меньше минимально возможного (" + std::to_string(min) + ")!");
-			if (integer > max) throw std::out_of_range("Введённое значение ("s + std::to_string(integer) + ") больше максимально возможного (" + std::to_string(max) + ")!");
+			if (std::cin.fail()) throw std::invalid_argument("The input could not be interpreted as a number!"); // Скорее всего, это исключение вообще никогда не возникнет
+			if (integer < min) throw std::out_of_range("Entered value ("s + std::to_string(integer) + ") less than the minimum possible (" + std::to_string(min) + ")!");
+			if (integer > max) throw std::out_of_range("Entered value ("s + std::to_string(integer) + ") more than the maximum possible (" + std::to_string(max) + ")!");
 
 			return integer;
 		}
-		catch (const std::exception& e) {
+		catch (const std::exception &e) {
 			clearScreen();
 			Global::setConsoleCursorPos(0, 0);
 			std::cerr << e.what() << std::endl;
@@ -72,7 +69,7 @@ private:
 		catch (...) {
 			clearScreen();
 			Global::setConsoleCursorPos(0, 0);
-			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
+			std::cerr << "Unknown critical error!" << std::endl;
 			throw;
 		}
 	}
@@ -87,9 +84,9 @@ public:
 	AppManager();
 	~AppManager() = default;
 
-	void updateScreen(Buffer& Buff, double dt);
+	void updateScreen(Buffer &Buff, Global::Duration dt);
 
-	void addLine();
+	void addLine(Global::TimePoint &&additionTime);
 
 	int8_t getFrequency() const;
 };

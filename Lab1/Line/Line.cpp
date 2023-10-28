@@ -1,16 +1,13 @@
 ﻿#include <Line.hpp>
 
 char Line::generateSymbol(bool isSpace) {
-	return isSpace ? ' ' : static_cast<char>(Global::getRandomUniformIntDistribution(33, 126));;
+	return isSpace ? ' ' : static_cast<char>(Global::getRandomUniformDistribution(33, 126));;
 }
 
 int8_t Line::generateColor() {
 	// цвет рандомный, если установлен флаг эпилепсии для символа, Цвет константно-рандомный, если установлен флаг эпилепсии для Линии. Ярко-зелёный (№10) по-умолчанию
 
-	if constexpr (Global::myEpilepsyType == Global::EpilepsyType::symbol)
-		return epilepsy_ ? static_cast<int8_t>(Global::getRandomUniformIntDistribution(1, 15)) : 10;
-	else if constexpr (Global::myEpilepsyType == Global::EpilepsyType::line)
-		return epilepsy_ ? lineColor_ : 10;
+	return epilepsy_ ? static_cast<int8_t>(Global::getRandomUniformDistribution(1, 15)) : 10;
 }
 
 Line::Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
@@ -25,57 +22,57 @@ Line::Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
 
 		if constexpr (Global::myLineType == Global::LineType::line)
 			// линия занимает только один символ в ширину
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), width_);
+			x_ = Global::getRandomUniformDistribution(static_cast<int16_t>(0), width_);
 		else if constexpr (Global::myLineType == Global::LineType::zigzag)
 			// зиг-заг занимает свою клетку и клетку справа от себя
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(width_ - 1));
+			x_ = Global::getRandomUniformDistribution(static_cast<int16_t>(0), static_cast<int16_t>(width_ - 1));
 		else if constexpr (Global::myLineType == Global::LineType::rhombus)
 			// ромб занимает свою клетку и клетки по бокам от себя
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(width_ - 1));
+			x_ = Global::getRandomUniformDistribution(static_cast<int16_t>(1), static_cast<int16_t>(width_ - 1));
 	}
 	else if constexpr (Global::myDirection == Global::Direction::downToUp) {
-		y_ = height_;
+	y_ = height_;
 
 		if constexpr (Global::myLineType == Global::LineType::line)
-			// линия занимает только один символ в ширину
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), width_);
+	// линия занимает только один символ в ширину
+			x_ = Global::getRandomUniformDistribution(static_cast<int16_t>(0), width_);
 		else if constexpr (Global::myLineType == Global::LineType::zigzag)
 			// зиг-заг занимает свою клетку и клетку справа от себя
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(width_ - 1));
+			x_ = Global::getRandomUniformDistribution(static_cast<int16_t>(0), static_cast<int16_t>(width_ - 1));
 		else if constexpr (Global::myLineType == Global::LineType::rhombus)
 			// ромб занимает свою клетку и клетки по бокам от себя
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(width_ - 1));
+			x_ = Global::getRandomUniformDistribution(static_cast<int16_t>(1), static_cast<int16_t>(width_ - 1));
 	}
 	else if constexpr (Global::myDirection == Global::Direction::leftToRight) {
 		x_ = 0;
 
 		if constexpr (Global::myLineType == Global::LineType::line)
 			// линия занимает только один символ в ширину
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), height_);
+			y_ = Global::getRandomUniformDistribution(static_cast<int16_t>(0), height_);
 		else if constexpr (Global::myLineType == Global::LineType::zigzag)
 			// зиг-заг занимает свою клетку и клетку снизу от себя
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(height_ - 1));
+			y_ = Global::getRandomUniformDistribution(static_cast<int16_t>(0), static_cast<int16_t>(height_ - 1));
 		else if constexpr (Global::myLineType == Global::LineType::rhombus)
 			// ромб занимает свою клетку и клетки по бокам от себя
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(height_ - 1));
+			y_ = Global::getRandomUniformDistribution(static_cast<int16_t>(1), static_cast<int16_t>(height_ - 1));
 	}
 	else if constexpr (Global::myDirection == Global::Direction::rightToLeft) {
 		x_ = width_;
 
 		if constexpr (Global::myLineType == Global::LineType::line)
 			// линия занимает только один символ в ширину
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), height_);
+			y_ = Global::getRandomUniformDistribution(static_cast<int16_t>(0), height_);
 		else if constexpr (Global::myLineType == Global::LineType::zigzag)
 			// зиг-заг занимает свою клетку и клетку снизу от себя
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(height_ - 1));
+			y_ = Global::getRandomUniformDistribution(static_cast<int16_t>(0), static_cast<int16_t>(height_ - 1));
 		else if constexpr (Global::myLineType == Global::LineType::rhombus)
 			// ромб занимает свою клетку и клетки по бокам от себя
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(height_ - 1));
+			y_ = Global::getRandomUniformDistribution(static_cast<int16_t>(1), static_cast<int16_t>(height_ - 1));
 	}
 
 	// Если нам надо генерировать цвет для всей линии сразу, то делаем это в конструкторе один раз
 	if constexpr (Global::myEpilepsyType == Global::EpilepsyType::line)
-		lineColor_ = static_cast<int8_t>(Global::getRandomUniformIntDistribution(1, 15));
+		lineColor_ = static_cast<int8_t>(Global::getRandomUniformDistribution(1, 15));
 }
 
 void Line::addSymbol(bool isSpace) {
@@ -97,7 +94,7 @@ void Line::move(Buffer &Buff, double distance) {
 	if constexpr (Global::myDirection == Global::Direction::upToDown)
 		y_ += distance;
 	else if constexpr (Global::myDirection == Global::Direction::downToUp)
-		y_ -= distance;
+	y_ -= distance;
 	else if constexpr (Global::myDirection == Global::Direction::leftToRight)
 		x_ += distance;
 	else if constexpr (Global::myDirection == Global::Direction::rightToLeft)
@@ -169,11 +166,11 @@ void Line::move(Buffer &Buff, double distance) {
 				stepsY--;
 			}
 			else if constexpr (Global::myDirection == Global::Direction::downToUp) {
-				yOffsetCounter_--;
+			yOffsetCounter_--;
 
 				if constexpr (Global::myLineType == Global::LineType::line) {
-					// Добавляем символ
-					addSymbol();
+			// Добавляем символ
+			addSymbol();
 				}
 				else if constexpr (Global::myLineType == Global::LineType::zigzag) {
 					if (toggle_) { // в основной линии символ
@@ -210,9 +207,9 @@ void Line::move(Buffer &Buff, double distance) {
 					toggle_ = !toggle_;
 				}
 
-				y_++;
+			y_++;
 
-				stepsY++;
+			stepsY++;
 			}
 			else if constexpr (Global::myDirection == Global::Direction::leftToRight) {
 				xOffsetCounter_++;
@@ -312,14 +309,14 @@ void Line::move(Buffer &Buff, double distance) {
 		auto currentIt = Symbols_.begin();
 		// Необходимо сместить в обратную сторону символы и их цвета
 		if constexpr (Global::myLineType == Global::LineType::line) {
-			if (Symbols_.size() >= 1) {
-				for (; std::next(currentIt) != Symbols_.end(); currentIt++) {
-					// копируем только один символ
-					currentIt->setColor(std::next(currentIt)->getColor());
-					currentIt->setSymbol(std::next(currentIt)->getSymbol());
-				}
-				// сгенерировать последнему новый символ
-				currentIt->setSymbol(generateSymbol());
+		if (Symbols_.size() >= 1) {
+			for (; std::next(currentIt) != Symbols_.end(); currentIt++) {
+				// копируем только один символ
+				currentIt->setColor(std::next(currentIt)->getColor());
+				currentIt->setSymbol(std::next(currentIt)->getSymbol());
+			}
+			// сгенерировать последнему новый символ
+			currentIt->setSymbol(generateSymbol());
 				currentIt->setColor(generateColor());
 			}
 		}
@@ -363,7 +360,7 @@ void Line::move(Buffer &Buff, double distance) {
 					currentIt->setColor(generateColor());
 					currentIt++;
 					currentIt->setSymbol(generateSymbol());
-					currentIt->setColor(generateColor());
+			currentIt->setColor(generateColor());
 					currentIt++;
 					currentIt->setSymbol(generateSymbol(true));
 					currentIt->setColor(generateColor());
@@ -377,7 +374,7 @@ void Line::move(Buffer &Buff, double distance) {
 					currentIt++;
 					currentIt->setSymbol(generateSymbol());
 					currentIt->setColor(generateColor());
-				}
+		}
 				toggle_ = !toggle_;
 			}
 		}
@@ -386,8 +383,8 @@ void Line::move(Buffer &Buff, double distance) {
 			stepsY--;
 		}
 		else if constexpr (Global::myDirection == Global::Direction::downToUp) {
-			stepsY++;
-		}
+		stepsY++;
+	}
 		else if constexpr (Global::myDirection == Global::Direction::leftToRight) {
 			stepsX--;
 		}
