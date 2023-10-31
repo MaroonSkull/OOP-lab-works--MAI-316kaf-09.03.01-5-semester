@@ -1,4 +1,5 @@
 ﻿#include <AppManager.hpp>
+#include <execution>
 
 AppManager::AppManager() {
 	try {
@@ -52,8 +53,10 @@ void AppManager::updateScreen(Buffer &Buff, Global::Duration dt) {
 	}
 
 	// Выводим все линии в порядке их появления (от старых к новым)
-	for (auto &node : LineList_)
-		node.first.print(Buff, width_, height_); // Передаём текущие размеры экрана
+	std::for_each(std::execution::par_unseq, LineList_.begin(), LineList_.end(), 
+		[this, &Buff](auto &Node) {
+			Node.first.print(Buff, width_, height_); // Передаём текущие размеры экрана
+		});
 }
 
 void AppManager::addLine(Global::TimePoint &&additionTime) {

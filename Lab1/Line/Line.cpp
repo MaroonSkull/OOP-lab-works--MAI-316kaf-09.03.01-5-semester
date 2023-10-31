@@ -1,4 +1,5 @@
 ﻿#include <Line.hpp>
+#include <execution>
 
 char Line::generateSymbol(bool isSpace) {
 	return isSpace ? ' ' : static_cast<char>(Global::getRandomUniformDistribution(33, 126));;
@@ -31,10 +32,10 @@ Line::Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
 			x_ = Global::getRandomUniformDistribution(static_cast<int16_t>(1), static_cast<int16_t>(width_ - 1));
 	}
 	else if constexpr (Global::myDirection == Global::Direction::downToUp) {
-	y_ = height_;
+		y_ = height_;
 
 		if constexpr (Global::myLineType == Global::LineType::line)
-	// линия занимает только один символ в ширину
+			// линия занимает только один символ в ширину
 			x_ = Global::getRandomUniformDistribution(static_cast<int16_t>(0), width_);
 		else if constexpr (Global::myLineType == Global::LineType::zigzag)
 			// зиг-заг занимает свою клетку и клетку справа от себя
@@ -94,7 +95,7 @@ void Line::move(Buffer &Buff, double distance) {
 	if constexpr (Global::myDirection == Global::Direction::upToDown)
 		y_ += distance;
 	else if constexpr (Global::myDirection == Global::Direction::downToUp)
-	y_ -= distance;
+		y_ -= distance;
 	else if constexpr (Global::myDirection == Global::Direction::leftToRight)
 		x_ += distance;
 	else if constexpr (Global::myDirection == Global::Direction::rightToLeft)
@@ -166,11 +167,11 @@ void Line::move(Buffer &Buff, double distance) {
 				stepsY--;
 			}
 			else if constexpr (Global::myDirection == Global::Direction::downToUp) {
-			yOffsetCounter_--;
+				yOffsetCounter_--;
 
 				if constexpr (Global::myLineType == Global::LineType::line) {
-			// Добавляем символ
-			addSymbol();
+					// Добавляем символ
+					addSymbol();
 				}
 				else if constexpr (Global::myLineType == Global::LineType::zigzag) {
 					if (toggle_) { // в основной линии символ
@@ -207,9 +208,9 @@ void Line::move(Buffer &Buff, double distance) {
 					toggle_ = !toggle_;
 				}
 
-			y_++;
+				y_++;
 
-			stepsY++;
+				stepsY++;
 			}
 			else if constexpr (Global::myDirection == Global::Direction::leftToRight) {
 				xOffsetCounter_++;
@@ -309,14 +310,14 @@ void Line::move(Buffer &Buff, double distance) {
 		auto currentIt = Symbols_.begin();
 		// Необходимо сместить в обратную сторону символы и их цвета
 		if constexpr (Global::myLineType == Global::LineType::line) {
-		if (Symbols_.size() >= 1) {
-			for (; std::next(currentIt) != Symbols_.end(); currentIt++) {
-				// копируем только один символ
-				currentIt->setColor(std::next(currentIt)->getColor());
-				currentIt->setSymbol(std::next(currentIt)->getSymbol());
-			}
-			// сгенерировать последнему новый символ
-			currentIt->setSymbol(generateSymbol());
+			if (Symbols_.size() >= 1) {
+				for (; std::next(currentIt) != Symbols_.end(); currentIt++) {
+					// копируем только один символ
+					currentIt->setColor(std::next(currentIt)->getColor());
+					currentIt->setSymbol(std::next(currentIt)->getSymbol());
+				}
+				// сгенерировать последнему новый символ
+				currentIt->setSymbol(generateSymbol());
 				currentIt->setColor(generateColor());
 			}
 		}
@@ -360,7 +361,7 @@ void Line::move(Buffer &Buff, double distance) {
 					currentIt->setColor(generateColor());
 					currentIt++;
 					currentIt->setSymbol(generateSymbol());
-			currentIt->setColor(generateColor());
+					currentIt->setColor(generateColor());
 					currentIt++;
 					currentIt->setSymbol(generateSymbol(true));
 					currentIt->setColor(generateColor());
@@ -374,7 +375,7 @@ void Line::move(Buffer &Buff, double distance) {
 					currentIt++;
 					currentIt->setSymbol(generateSymbol());
 					currentIt->setColor(generateColor());
-		}
+				}
 				toggle_ = !toggle_;
 			}
 		}
@@ -383,8 +384,8 @@ void Line::move(Buffer &Buff, double distance) {
 			stepsY--;
 		}
 		else if constexpr (Global::myDirection == Global::Direction::downToUp) {
-		stepsY++;
-	}
+			stepsY++;
+		}
 		else if constexpr (Global::myDirection == Global::Direction::leftToRight) {
 			stepsX--;
 		}
@@ -394,13 +395,14 @@ void Line::move(Buffer &Buff, double distance) {
 	}
 }
 
-void Line::print(Buffer& Buff, int16_t width, int16_t height) {
+void Line::print(Buffer &Buff, int16_t width, int16_t height) {
 	// Обновляем данные о высоте и ширине экрана
 	width_ = { width };
 	height_ = { height };
 
 	// Проходим по всем символам
-	for (auto& Node : Symbols_) {
+	//for (auto &Node : Symbols_) {
+	std::for_each(std::execution::par_unseq, Symbols_.begin(), Symbols_.end(), [this, &Buff](auto &Node) {
 		// Округляем позицию начала линии до целых
 		int16_t xHeadPosition{ static_cast<int16_t>(x_) };
 		int16_t yHeadPosition{ static_cast<int16_t>(y_) };
@@ -416,8 +418,5 @@ void Line::print(Buffer& Buff, int16_t width, int16_t height) {
 			yHeadPosition == std::clamp(yHeadPosition, 0i16, height_))
 			// То печатаем символ
 			Node.print(Buff, xSymbolPosition, ySymbolPosition);
-
-		// Сбрасываем курсор
-		Global::setConsoleCursorPos(0, 0);
-	}
+		});
 }
