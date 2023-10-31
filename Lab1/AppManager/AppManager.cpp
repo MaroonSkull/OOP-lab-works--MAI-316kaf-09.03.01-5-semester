@@ -3,7 +3,7 @@
 AppManager::AppManager() {
 	try {
 		updateConsoleSizes(); // инициируем height_, width_
-		
+
 		freq_ = getIntegralFromConsole("частоту появления линий", 1, 30);
 		speed_ = getIntegralFromConsole("скорость линий", 1, 30);
 		length_ = getIntegralFromConsole("длину линий", 1, 30);
@@ -20,18 +20,25 @@ AppManager::AppManager() {
 }
 
 // dt - прошедшее время в секундах
-void AppManager::updateScreen(double dt) {
+void AppManager::updateScreen(Global::Duration dt) {
 	// Проверяем, не изменились ли размеры консоли?
 	updateConsoleSizes();
 
 	// Для каждой линии
 	for (auto it = LineList_.begin(); it != LineList_.end();) {
+		auto &[currentLine, startTimeOpt] = *it;
 		// сдвигаем линию туда, где она должна была оказаться с такой скоростью через такое время
-		it->move(speed_ * dt);
+		auto ellapsedTime = dt;
+		if (startTimeOpt) {
+			ellapsedTime += Global::Clock::now() - startTimeOpt.value();
+			startTimeOpt = std::nullopt;
+		}
+
+		currentLine.move(speed_ * ellapsedTime.count() * Global::timeToSeconds);
 
 		// получаем координаты начала линии
-		auto x{ it->getX() };
-		auto y{ it->getY() };
+		auto x{ currentLine.getX() };
+		auto y{ currentLine.getY() };
 
 		// если координаты начала линии скрылись за пределами отображаемой области
 		if (x != std::clamp(x, static_cast<int16_t>(0), width_) ||
@@ -42,18 +49,18 @@ void AppManager::updateScreen(double dt) {
 		else
 			it++;
 	}
-	
+
 	// после окончания основной логики, очищаем экран
 	if constexpr (Global::enableClearScreen)
 		clearScreen(); // Это решение годится только для низкого FPS, < ~15
-	
+
 	// Выводим все линии в порядке их появления (от старых к новым)
-	for (auto& node : LineList_)
-		node.print(width_, height_); // Передаём текущие размеры экрана
+	for (auto &node : LineList_)
+		node.first.print(width_, height_); // Передаём текущие размеры экрана
 }
 
-void AppManager::addLine() {
-	LineList_.push_back(Line(width_, height_, length_, epilepsy_));
+void AppManager::addLine(Global::TimePoint additionTime) {
+	LineList_.push_back(std::make_pair(Line(width_, height_, length_, epilepsy_), additionTime));
 }
 
 void AppManager::clearScreen() {
@@ -69,10 +76,41 @@ int8_t AppManager::getFrequency() const {
 	return freq_;
 }
 
+int AppManager::getIntegralFromConsole(std::string_view msg, int min, int max) {
+	while (true)
+		try {
+			using namespace std::literals; // operator ""s
+
+			std::string inp;
+			int integer;
+
+			std::cout << "Пожалуйста, введите " << msg << " в интервале [" << min << ", " << max << "]: ";
+			std::getline(std::cin, inp); // fetch user input, save into inp
+			integer = std::stoi(inp);
+
+			if (std::cin.fail()) throw std::invalid_argument("Ввод не удалось интерпретировать как число!"); // Скорее всего, это исключение вообще никогда не возникнет
+			if (integer < min) throw std::out_of_range("Введённое значение ("s + std::to_string(integer) + ") меньше минимально возможного (" + std::to_string(min) + ")!");
+			if (integer > max) throw std::out_of_range("Введённое значение ("s + std::to_string(integer) + ") больше максимально возможного (" + std::to_string(max) + ")!");
+
+			return integer;
+		}
+		catch (const std::exception &e) {
+			clearScreen();
+			Global::setConsoleCursorPos(0, 0);
+			std::cerr << e.what() << std::endl;
+		}
+		catch (...) {
+			clearScreen();
+			Global::setConsoleCursorPos(0, 0);
+			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
+			throw;
+		}
+}
+
 bool AppManager::getConfirmFromConsole(std::string_view msg) {
 	std::string inp;
 
-	for (;;)
+	while (true)
 		try {
 			using namespace std::literals; // operator ""s
 
@@ -88,7 +126,7 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 			// достаточно условия только на одно из состояний
 			return (inp == "Y") ? true : false;
 		}
-		catch (const std::exception& e) {
+		catch (const std::exception &e) {
 			clearScreen();
 			Global::setConsoleCursorPos(0, 0);
 			std::cerr << e.what() << std::endl;
