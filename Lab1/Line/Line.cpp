@@ -8,7 +8,10 @@ char Line::generateSymbol(bool isSpace) {
 int8_t Line::generateColor() {
 	// цвет рандомный, если установлен флаг эпилепсии для символа, Цвет константно-рандомный, если установлен флаг эпилепсии для Линии. Ярко-зелёный (№10) по-умолчанию
 
-	return epilepsy_ ? static_cast<int8_t>(Global::getRandomUniformDistribution(1, 15)) : 10;
+	if constexpr (Global::myEpilepsyType == Global::EpilepsyType::symbol)
+		return epilepsy_ ? static_cast<int8_t>(Global::getRandomUniformDistribution(1, 15)) : 10;
+	else if constexpr (Global::myEpilepsyType == Global::EpilepsyType::line)
+		return epilepsy_ ? lineColor_ : 10;
 }
 
 Line::Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
