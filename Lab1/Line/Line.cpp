@@ -404,7 +404,6 @@ void Line::print(Buffer &Buff, int16_t width, int16_t height) {
 	height_ = { height };
 
 	// Проходим по всем символам
-	//for (auto &Node : Symbols_) {
 	std::for_each(std::execution::par_unseq, Symbols_.begin(), Symbols_.end(), [this, &Buff](auto &Node) {
 		// Округляем позицию начала линии до целых
 		int16_t xHeadPosition{ static_cast<int16_t>(x_) };
