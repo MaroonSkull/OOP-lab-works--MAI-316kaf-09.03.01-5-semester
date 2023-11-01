@@ -1,5 +1,4 @@
 ﻿#include <Line.hpp>
-#include <execution>
 
 char Line::generateSymbol(bool isSpace) {
 	return isSpace ? ' ' : static_cast<char>(Global::getRandomUniformDistribution(33, 126));;
@@ -403,8 +402,7 @@ void Line::print(Buffer &Buff, int16_t width, int16_t height) {
 	width_ = { width };
 	height_ = { height };
 
-	// Проходим по всем символам
-	std::for_each(std::execution::par_unseq, Symbols_.begin(), Symbols_.end(), [this, &Buff](auto &Node) {
+	auto printIfVisible = [this, &Buff](auto &Node) {
 		// Округляем позицию начала линии до целых
 		int16_t xHeadPosition{ static_cast<int16_t>(x_) };
 		int16_t yHeadPosition{ static_cast<int16_t>(y_) };
@@ -420,5 +418,8 @@ void Line::print(Buffer &Buff, int16_t width, int16_t height) {
 			yHeadPosition == std::clamp(yHeadPosition, 0i16, height_))
 			// То печатаем символ
 			Node.print(Buff, xSymbolPosition, ySymbolPosition);
-		});
+		};
+
+	// Проходим по всем символам
+	std::ranges::for_each(Symbols_, printIfVisible);
 }
