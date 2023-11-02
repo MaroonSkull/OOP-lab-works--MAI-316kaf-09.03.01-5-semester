@@ -1,11 +1,30 @@
-﻿#include "Symbol.h"
+#include "Symbol.h"
 
-void Symbol::print(int16_t x, int16_t y) {
-	print(x, y, symbol_);
+#include <Windows.h>
+
+#include <iostream>
+
+
+
+const static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+
+void Symbol::setConsoleCursorPos(int x, int y) const {
+	COORD pos(x, y);
+	SetConsoleCursorPosition(hConsole, pos);
 }
 
-void Symbol::print(int16_t x, int16_t y, char symbol) {
-	Global::setConsoleCursorPos(x, y);
-	Global::setConsoleColor(color_);
+void Symbol::setConsoleColor(int color) const {
+	WORD wColor = static_cast<WORD>(color & 0x0F);
+	SetConsoleTextAttribute(hConsole, wColor);
+}
+
+void Symbol::print(int x, int y) {
+	print(x, y, symbol);
+}
+
+void Symbol::print(int x, int y, char symbol) {
+	setConsoleCursorPos(x, y);
+	setConsoleColor(color);
 	std::cout << symbol;
 }

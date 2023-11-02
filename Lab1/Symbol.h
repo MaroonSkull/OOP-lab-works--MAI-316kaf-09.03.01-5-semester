@@ -1,61 +1,56 @@
 ﻿#pragma once
 
 
-#include <iostream>
-
-#include <Windows.h>
-
-#include "Global.h"
-
-
-
 class Symbol {
 private:
-	int16_t offsetX_;
-	int16_t offsetY_;
-	char symbol_;
-	int8_t color_;
+	int offsetX;
+	int offsetY;
+	char symbol;
+	int color;
 
+	void setConsoleCursorPos(int x, int y) const;
+
+	void setConsoleColor(int color) const;
 
 public:
-	Symbol(int16_t offsetX, int16_t offsetY, char symbol, int8_t color)
-		: offsetX_{ offsetX }, offsetY_{ offsetY }, symbol_{ symbol }, color_{ color } {}
+	Symbol(int offsetX, int offsetY, char symbol, int color)
+		: offsetX{ offsetX }, offsetY{ offsetY }, symbol{ symbol }, color{ color } {}
 
-	void print(int16_t x, int16_t y);
+	void print(int x, int y);
 
-	void print(int16_t x, int16_t y, char symbol);
+	void print(int x, int y, char symbol);
 
 	// Геттеры и сеттеры расположены в хэдере, чтобы инлайнить функцию с простой логикой
 	// это позволяет компилятору оптимизировать код, вовсе убирая накладные расходы на вызов функции
-	int16_t getXOffset() const {
-		return offsetX_;
+	int getXOffset() const {
+		return offsetX;
 	}
 
-	void setXOffset(int16_t offsetX) {
-		offsetX_ = offsetX;
+	void setXOffset(int offsetX) {
+		this->offsetX = offsetX;
 	}
 
-	int16_t getYOffset() const {
-		return offsetY_;
+	int getYOffset() const {
+		return offsetY;
 	}
 
-	void setYOffset(int16_t offsetY) {
-		offsetY_ = offsetY;
+	void setYOffset(int offsetY) {
+		this->offsetY = offsetY;
 	}
 
 	char getSymbol() const {
-		return symbol_;
+		return symbol;
 	}
 
 	void setSymbol(char symbol) {
-		symbol_ = { symbol };
+		this->symbol = symbol;
 	}
 
-	int8_t getColor() const {
-		return color_;
+	int getColor() const {
+		return color;
 	}
 
-	void setColor(int8_t color) {
-		color_ = { color };
+	void setColor(int color) {
+		this->color = color;
 	}
 };

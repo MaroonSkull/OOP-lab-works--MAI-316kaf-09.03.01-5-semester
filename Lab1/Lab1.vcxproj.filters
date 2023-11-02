@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AppManager.cpp">
+    <ClCompile Include="Lab1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Lab1.cpp">
+    <ClCompile Include="AppManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Line.cpp">
@@ -32,10 +32,10 @@
     <ClInclude Include="AppManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Global.h">
+    <ClInclude Include="Line.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Line.h">
+    <ClInclude Include="Global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Symbol.h">
