@@ -1,4 +1,5 @@
 ﻿#include <Line.hpp>
+#include <Global.hpp>
 
 #include <random>
 
@@ -506,8 +507,5 @@ void Line::print(int width, int height) {
 		if (isCoordInsideFrame(xSymbolPosition, ySymbolPosition) && isCoordInsideFrame(xHeadPosition, yHeadPosition))
 			// То печатаем символ
 			Symbol.print(xSymbolPosition, ySymbolPosition);
-
-		// Сбрасываем курсор
-		//Global::setConsoleCursorPos(0, 0);
 	}
 }

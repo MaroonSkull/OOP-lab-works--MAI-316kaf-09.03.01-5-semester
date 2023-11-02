@@ -1,13 +1,13 @@
 ﻿#include <iostream>
 #include <random>
 
+#include <Windows.h>
+
 #include <AppManager.hpp>
-#include <Global.hpp>
 
 
 
 int main() {
-	using namespace Global;
 	std::vector<TimePoint> timePoints;
 
 	// Устанавливаем вывод на русском языке

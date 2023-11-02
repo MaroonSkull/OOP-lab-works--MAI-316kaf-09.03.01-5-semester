@@ -1,5 +1,7 @@
 ﻿#include <Symbol.hpp>
 
+#include <Windows.h>
+
 #include <iostream>
 
 

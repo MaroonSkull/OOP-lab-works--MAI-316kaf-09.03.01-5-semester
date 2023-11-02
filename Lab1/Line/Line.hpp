@@ -1,10 +1,8 @@
 ﻿#pragma once
 
 
-#include <iostream>
 #include <list>
 
-#include <Global.hpp>
 #include <Symbol.hpp>
 
 

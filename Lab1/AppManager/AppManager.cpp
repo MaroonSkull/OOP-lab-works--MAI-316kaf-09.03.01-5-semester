@@ -1,6 +1,9 @@
 ﻿#include <AppManager.hpp>
 
+#include <Windows.h>
+
 #include <algorithm>
+#include <iostream>
 
 
 
@@ -45,10 +48,6 @@ void AppManager::updateScreen(Duration dt) {
 		else
 			iterator++;
 	}
-
-	// после окончания основной логики, очищаем экран
-	if constexpr (Global::enableClearScreen)
-		clearScreen(); // Это решение годится только для низкого FPS, < ~15
 
 	// Выводим все линии в порядке их появления (от старых к новым)
 	for (auto &Line : Lines)

@@ -1,12 +1,6 @@
 ﻿#pragma once
 
 
-#include <Windows.h>
-
-#include <Global.hpp>
-
-
-
 class Symbol {
 private:
 	int offsetX;
