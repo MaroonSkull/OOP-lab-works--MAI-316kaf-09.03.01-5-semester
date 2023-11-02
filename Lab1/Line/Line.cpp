@@ -1,111 +1,154 @@
 ﻿#include <Line.hpp>
 
+#include <random>
+
+
+
+static std::random_device rd;
+static std::ranlux24_base engine(rd());
+
 char Line::generateSymbol(bool isSpace) {
-	return isSpace ? ' ' : static_cast<char>(Global::getRandomUniformIntDistribution(33, 126));;
+	static std::uniform_int_distribution<int> Distribution(33, 126);
+	return isSpace ? ' ' : Distribution(engine);
 }
 
-int8_t Line::generateColor() {
+int Line::generateColor() {
 	// цвет рандомный, если установлен флаг эпилепсии для символа, Цвет константно-рандомный, если установлен флаг эпилепсии для Линии. Ярко-зелёный (№10) по-умолчанию
 
-	if constexpr (Global::myEpilepsyType == Global::EpilepsyType::symbol)
-		return epilepsy_ ? static_cast<int8_t>(Global::getRandomUniformIntDistribution(1, 15)) : 10;
+	if constexpr (Global::myEpilepsyType == Global::EpilepsyType::symbol) {
+		static std::uniform_int_distribution<int> Distribution(1, 15);
+		return epilepsy ? Distribution(engine) : 10;
+	}
 	else if constexpr (Global::myEpilepsyType == Global::EpilepsyType::line)
-		return epilepsy_ ? lineColor_ : 10;
+		return epilepsy ? lineColor : 10;
 }
 
-Line::Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
-	: width_{ width }, height_{ height }, length_{ length }, epilepsy_{ epilepsy }
+bool Line::isCoordInsideFrame(int x, int y) const {
+	return
+		x == std::clamp(x, 0, width) &&
+		y == std::clamp(y, 0, height);
+}
+
+Line::Line(int width, int height, int length, bool epilepsy)
+	: width{ width }, height{ height }, length{ length }, epilepsy{ epilepsy }
 {
-	toggle_ = (width_ + height_) % 2; // это позволяет нам выбирать, для зигзага сначала идёт левый или правый символ
+	toggle = (width + height) % 2; // это позволяет нам выбирать, для зигзага сначала идёт левый или правый символ
 	// а для ромба - идёт сначала один символ или сразу два.
 
-	// тут x_ и y_ зависит от направления
+	// Начальные значения для x и y зависят от направления варианта
 	if constexpr (Global::myDirection == Global::Direction::upToDown) {
-		y_ = 0;
+		y = 0;
 
-		if constexpr (Global::myLineType == Global::LineType::line)
+		if constexpr (Global::myLineType == Global::LineType::line) {
 			// линия занимает только один символ в ширину
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), width_);
-		else if constexpr (Global::myLineType == Global::LineType::zigzag)
+			static std::uniform_int_distribution<int> Distribution(0, width);
+			x = Distribution(engine);
+		}
+		else if constexpr (Global::myLineType == Global::LineType::zigzag) {
 			// зиг-заг занимает свою клетку и клетку справа от себя
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(width_ - 1));
-		else if constexpr (Global::myLineType == Global::LineType::rhombus)
+			static std::uniform_int_distribution<int> Distribution(0, width - 1);
+			x = Distribution(engine);
+		}
+		else if constexpr (Global::myLineType == Global::LineType::rhombus) {
 			// ромб занимает свою клетку и клетки по бокам от себя
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(width_ - 1));
+			static std::uniform_int_distribution<int> Distribution(1, width - 1);
+			x = Distribution(engine);
+		}
 	}
 	else if constexpr (Global::myDirection == Global::Direction::downToUp) {
-		y_ = height_;
+		y = height;
 
-		if constexpr (Global::myLineType == Global::LineType::line)
+		if constexpr (Global::myLineType == Global::LineType::line) {
 			// линия занимает только один символ в ширину
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), width_);
-		else if constexpr (Global::myLineType == Global::LineType::zigzag)
+			static std::uniform_int_distribution<int> Distribution(0, width);
+			x = Distribution(engine);
+		}
+		else if constexpr (Global::myLineType == Global::LineType::zigzag) {
 			// зиг-заг занимает свою клетку и клетку справа от себя
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(width_ - 1));
-		else if constexpr (Global::myLineType == Global::LineType::rhombus)
+			static std::uniform_int_distribution<int> Distribution(0, width - 1);
+			x = Distribution(engine);
+		}
+		else if constexpr (Global::myLineType == Global::LineType::rhombus) {
 			// ромб занимает свою клетку и клетки по бокам от себя
-			x_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(width_ - 1));
+			static std::uniform_int_distribution<int> Distribution(1, width - 1);
+			x = Distribution(engine);
+		}
 	}
 	else if constexpr (Global::myDirection == Global::Direction::leftToRight) {
-		x_ = 0;
+		x = 0;
 
-		if constexpr (Global::myLineType == Global::LineType::line)
+		if constexpr (Global::myLineType == Global::LineType::line) {
 			// линия занимает только один символ в ширину
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), height_);
-		else if constexpr (Global::myLineType == Global::LineType::zigzag)
+			static std::uniform_int_distribution<int> Distribution(0, height);
+			y = Distribution(engine);
+		}
+		else if constexpr (Global::myLineType == Global::LineType::zigzag) {
 			// зиг-заг занимает свою клетку и клетку снизу от себя
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(height_ - 1));
-		else if constexpr (Global::myLineType == Global::LineType::rhombus)
+			static std::uniform_int_distribution<int> Distribution(0, height - 1);
+			y = Distribution(engine);
+		}
+		else if constexpr (Global::myLineType == Global::LineType::rhombus) {
 			// ромб занимает свою клетку и клетки по бокам от себя
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(height_ - 1));
+			static std::uniform_int_distribution<int> Distribution(1, height - 1);
+			y = Distribution(engine);
+		}
 	}
 	else if constexpr (Global::myDirection == Global::Direction::rightToLeft) {
-		x_ = width_;
+		x = width;
 
-		if constexpr (Global::myLineType == Global::LineType::line)
+		if constexpr (Global::myLineType == Global::LineType::line) {
 			// линия занимает только один символ в ширину
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), height_);
-		else if constexpr (Global::myLineType == Global::LineType::zigzag)
+			static std::uniform_int_distribution<int> Distribution(0, height);
+			y = Distribution(engine);
+		}
+		else if constexpr (Global::myLineType == Global::LineType::zigzag) {
 			// зиг-заг занимает свою клетку и клетку снизу от себя
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(0), static_cast<int16_t>(height_ - 1));
-		else if constexpr (Global::myLineType == Global::LineType::rhombus)
+			static std::uniform_int_distribution<int> Distribution(0, height - 1);
+			y = Distribution(engine);
+		}
+		else if constexpr (Global::myLineType == Global::LineType::rhombus) {
 			// ромб занимает свою клетку и клетки по бокам от себя
-			y_ = Global::getRandomUniformIntDistribution(static_cast<int16_t>(1), static_cast<int16_t>(height_ - 1));
+			static std::uniform_int_distribution<int> Distribution(1, height - 1);
+			y = Distribution(engine);
+		}
 	}
 
 	// Если нам надо генерировать цвет для всей линии сразу, то делаем это в конструкторе один раз
-	if constexpr (Global::myEpilepsyType == Global::EpilepsyType::line)
-		lineColor_ = static_cast<int8_t>(Global::getRandomUniformIntDistribution(1, 15));
+	if constexpr (Global::myEpilepsyType == Global::EpilepsyType::line) {
+		static std::uniform_int_distribution<int> Distribution(1, 15);
+		lineColor = Distribution(engine);
+	}
 }
 
 void Line::addSymbol(bool isSpace) {
 	// Если это не пробел, то выбираем рандомный символ
-	char symbol{ generateSymbol(isSpace) };
+	char symbol = generateSymbol(isSpace);
 
 	// и задаём цвет
-	int8_t color{ generateColor() };
+	int color = generateColor();
 
-	Symbols_.push_back(Symbol(xOffsetCounter_, yOffsetCounter_, symbol, color));
+	Symbols.push_back(Symbol(xOffsetCounter, yOffsetCounter, symbol, color));
 }
 
 void Line::move(double distance) {
 
-	// Получаем текущую позицию начала линии
-	int16_t x{ static_cast<int16_t>(x_) };
-	int16_t y{ static_cast<int16_t>(y_) };
+	// Получаем текущую позицию начала линии и отбрасываем дробную часть
+	int x = static_cast<int>(this->x);
+	int y = static_cast<int>(this->y);
+
 	// Накапливаем смещение
 	if constexpr (Global::myDirection == Global::Direction::upToDown)
-		y_ += distance;
+		this->y += distance;
 	else if constexpr (Global::myDirection == Global::Direction::downToUp)
-		y_ -= distance;
+		this->y -= distance;
 	else if constexpr (Global::myDirection == Global::Direction::leftToRight)
-		x_ += distance;
+		this->x += distance;
 	else if constexpr (Global::myDirection == Global::Direction::rightToLeft)
-		x_ -= distance;
+		this->x -= distance;
 
 	// Вычисляем, на сколько позиций нам надо сместиться
-	int16_t stepsY = static_cast<int16_t>(y_) - y; // вертикально
-	int16_t stepsX = static_cast<int16_t>(x_) - x; // горизонтально
+	int stepsY = static_cast<int>(this->y) - y; // вертикально
+	int stepsX = static_cast<int>(this->x) - x; // горизонтально
 
 
 	// Если целочисленно нам пора бы уже сместиться
@@ -114,208 +157,207 @@ void Line::move(double distance) {
 		// Если мы всё ещё не полностью добавили все символы линии
 		bool symbolsCondition{}; // переменная нужна только с использованием if constexpr, лучше удалить и перенести условие в обычный if пониже
 		if constexpr (Global::myLineType == Global::LineType::line)
-			symbolsCondition = Symbols_.size() < length_;
+			symbolsCondition = Symbols.size() < length;
 		else if constexpr (Global::myLineType == Global::LineType::zigzag)
-			symbolsCondition = Symbols_.size() < length_ * 2;
+			symbolsCondition = Symbols.size() < length * 2;
 		else if constexpr (Global::myLineType == Global::LineType::rhombus)
-			symbolsCondition = Symbols_.size() < length_ * 3;
+			symbolsCondition = Symbols.size() < length * 3;
 
 		if (symbolsCondition) {
 			// Играемся с отступами как нам надо
 			if constexpr (Global::myDirection == Global::Direction::upToDown) {
-				yOffsetCounter_++;
+				yOffsetCounter++;
 
 				if constexpr (Global::myLineType == Global::LineType::line) {
 					// Добавляем символ
 					addSymbol();
 				}
 				else if constexpr (Global::myLineType == Global::LineType::zigzag) {
-					if (toggle_) { // в основной линии символ
+					if (toggle) { // в основной линии символ
 						addSymbol();
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol(true);
 					}
 					else {
 						addSymbol(true);
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol();
 					}
-					xOffsetCounter_--;
-					toggle_ = !toggle_;
+					xOffsetCounter--;
+					toggle = !toggle;
 				}
 				else if constexpr (Global::myLineType == Global::LineType::rhombus) {
-					if (toggle_) { // символ и два пробела вокруг
-						xOffsetCounter_--;
+					if (toggle) { // символ и два пробела вокруг
+						xOffsetCounter--;
 						addSymbol(true);
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol();
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol(true);
 					}
 					else { // два символа вокруг пробела
-						xOffsetCounter_--;
+						xOffsetCounter--;
 						addSymbol();
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol(true);
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol();
 					}
-					xOffsetCounter_--;
-					toggle_ = !toggle_;
+					xOffsetCounter--;
+					toggle = !toggle;
 				}
 
-				y_--;
+				this->y--;
 
 				stepsY--;
 			}
 			else if constexpr (Global::myDirection == Global::Direction::downToUp) {
-				yOffsetCounter_--;
+				yOffsetCounter--;
 
 				if constexpr (Global::myLineType == Global::LineType::line) {
 					// Добавляем символ
 					addSymbol();
 				}
 				else if constexpr (Global::myLineType == Global::LineType::zigzag) {
-					if (toggle_) { // в основной линии символ
+					if (toggle) { // в основной линии символ
 						addSymbol();
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol(true);
 					}
 					else {
 						addSymbol(true);
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol();
 					}
-					xOffsetCounter_--;
-					toggle_ = !toggle_;
+					xOffsetCounter--;
+					toggle = !toggle;
 				}
 				else if constexpr (Global::myLineType == Global::LineType::rhombus) {
-					if (toggle_) { // символ и два пробела вокруг
-						xOffsetCounter_--;
+					if (toggle) { // символ и два пробела вокруг
+						xOffsetCounter--;
 						addSymbol(true);
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol();
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol(true);
 					}
 					else { // два символа вокруг пробела
-						xOffsetCounter_--;
+						xOffsetCounter--;
 						addSymbol();
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol(true);
-						xOffsetCounter_++;
+						xOffsetCounter++;
 						addSymbol();
 					}
-					xOffsetCounter_--;
-					toggle_ = !toggle_;
+					xOffsetCounter--;
+					toggle = !toggle;
 				}
 
-				y_++;
+				this->y++;
 
 				stepsY++;
 			}
 			else if constexpr (Global::myDirection == Global::Direction::leftToRight) {
-				xOffsetCounter_++;
+				xOffsetCounter++;
 
 				if constexpr (Global::myLineType == Global::LineType::line) {
 					// Добавляем символ
 					addSymbol();
 				}
 				else if constexpr (Global::myLineType == Global::LineType::zigzag) {
-					if (toggle_) { // в основной линии символ
+					if (toggle) { // в основной линии символ
 						addSymbol();
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol(true);
 					}
 					else {
 						addSymbol(true);
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol();
 					}
-					yOffsetCounter_--;
-					toggle_ = !toggle_;
+					yOffsetCounter--;
+					toggle = !toggle;
 				}
 				else if constexpr (Global::myLineType == Global::LineType::rhombus) {
-					if (toggle_) { // символ и два пробела вокруг
-						yOffsetCounter_--;
+					if (toggle) { // символ и два пробела вокруг
+						yOffsetCounter--;
 						addSymbol(true);
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol();
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol(true);
 					}
 					else { // два символа вокруг пробела
-						yOffsetCounter_--;
+						yOffsetCounter--;
 						addSymbol();
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol(true);
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol();
 					}
-					yOffsetCounter_--;
-					toggle_ = !toggle_;
+					yOffsetCounter--;
+					toggle = !toggle;
 				}
 
-				x_--;
+				this->x--;
 
 				stepsX--;
 			}
 			else if constexpr (Global::myDirection == Global::Direction::rightToLeft) {
-				xOffsetCounter_--;
+				xOffsetCounter--;
 
 				if constexpr (Global::myLineType == Global::LineType::line) {
 					// Добавляем символ
 					addSymbol();
 				}
 				else if constexpr (Global::myLineType == Global::LineType::zigzag) {
-					if (toggle_) { // в основной линии символ
+					if (toggle) { // в основной линии символ
 						addSymbol();
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol(true);
 					}
 					else {
 						addSymbol(true);
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol();
 					}
-					yOffsetCounter_--;
-					toggle_ = !toggle_;
+					yOffsetCounter--;
+					toggle = !toggle;
 				}
 				else if constexpr (Global::myLineType == Global::LineType::rhombus) {
-					if (toggle_) { // символ и два пробела вокруг
-						yOffsetCounter_--;
+					if (toggle) { // символ и два пробела вокруг
+						yOffsetCounter--;
 						addSymbol(true);
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol();
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol(true);
 					}
 					else { // два символа вокруг пробела
-						yOffsetCounter_--;
+						yOffsetCounter--;
 						addSymbol();
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol(true);
-						yOffsetCounter_++;
+						yOffsetCounter++;
 						addSymbol();
 					}
-					yOffsetCounter_--;
-					toggle_ = !toggle_;
+					yOffsetCounter--;
+					toggle = !toggle;
 				}
 
-				x_++;
+				this->x++;
 
 				stepsX++;
 			}
 			continue;
 		}
 		// Мы уже добавили всё, что только могли, теперь остаётся только перемещать уже существующие символы
-		auto currentIt = Symbols_.begin();
+		auto currentIt = Symbols.begin();
 		// Пытаемся стереть символы только если отключена полная очистка экрана
 		if constexpr (!Global::enableClearScreen)
-			for (; y != static_cast<int16_t>(y_) || x != static_cast<int16_t>(x_);) {
-				// Если позиция, где фактически должен быть стёрт символ, внутри экрана
-				if (x == std::clamp(x, static_cast<int16_t>(0), static_cast<int16_t>(width_)) &&
-					y == std::clamp(y, static_cast<int16_t>(0), static_cast<int16_t>(height_))) {
+			for (; y != static_cast<int>(this->y) || x != static_cast<int>(this->x);) {
+				// Если позиция, где начинается линия внутри экрана, то все символы первой строки линии точно будут внутри экрана
+				if (isCoordInsideFrame(x, y)) {
 					if constexpr (Global::myLineType == Global::LineType::line)
 						// Стираем символ с экрана в той точке, где его больше не будет
 						currentIt->print(x, y, ' ');
@@ -323,16 +365,24 @@ void Line::move(double distance) {
 						// стираем оба символа, что должны быть в начале (нас не волнует стирание пробельных символов)
 						currentIt->print(x, y, ' ');
 						currentIt++;
-						currentIt->print(x, y, ' ');
+						int xSymb = x + currentIt->getYOffset();
+						int ySymb = y + currentIt->getYOffset();
+						currentIt->print(xSymb, ySymb, ' ');
 						currentIt--;
 					}
 					else if constexpr (Global::myLineType == Global::LineType::rhombus) {
+						int xSymb = x + currentIt->getXOffset();
+						int ySymb = y + currentIt->getYOffset();
 						// стираем три начальных символа
-						currentIt->print(x, y, ' ');
+						currentIt->print(xSymb, ySymb, ' ');
 						currentIt++;
-						currentIt->print(x, y, ' ');
+						xSymb = x + currentIt->getXOffset();
+						ySymb = y + currentIt->getYOffset();
+						currentIt->print(xSymb, ySymb, ' ');
 						currentIt++;
-						currentIt->print(x, y, ' ');
+						xSymb = x + currentIt->getXOffset();
+						ySymb = y + currentIt->getYOffset();
+						currentIt->print(xSymb, ySymb, ' ');
 						currentIt--;
 						currentIt--;
 					}
@@ -352,8 +402,8 @@ void Line::move(double distance) {
 			}
 		// Так же необходимо сместить в обратную сторону символы и их цвета
 		if constexpr (Global::myLineType == Global::LineType::line) {
-			if (Symbols_.size() >= 1) {
-				for (; std::next(currentIt) != Symbols_.end(); currentIt++) {
+			if (Symbols.size() >= 1) {
+				for (; currentIt != std::prev(Symbols.end()); currentIt++) {
 					// копируем только один символ
 					currentIt->setColor(std::next(currentIt)->getColor());
 					currentIt->setSymbol(std::next(currentIt)->getSymbol());
@@ -364,14 +414,14 @@ void Line::move(double distance) {
 			}
 		}
 		else if constexpr (Global::myLineType == Global::LineType::zigzag) {
-			if (Symbols_.size() >= 2) {
-				for (; std::next(std::next(currentIt)) != Symbols_.end(); currentIt++) {
+			if (Symbols.size() >= 2) {
+				for (; currentIt != std::prev(Symbols.end(), 2); currentIt++) {
 					// копируем на два символа вперёд
-					currentIt->setColor(std::next(std::next(currentIt))->getColor());
-					currentIt->setSymbol(std::next(std::next(currentIt))->getSymbol());
+					currentIt->setColor(std::next(currentIt, 2)->getColor());
+					currentIt->setSymbol(std::next(currentIt, 2)->getSymbol());
 				}
 				// сгенерировать последним двум новый символ
-				if (toggle_) { // в основной линии символ
+				if (toggle) { // в основной линии символ
 					currentIt->setSymbol(generateSymbol());
 					currentIt->setColor(generateColor());
 					currentIt++;
@@ -387,18 +437,18 @@ void Line::move(double distance) {
 					currentIt->setColor(generateColor());
 					currentIt--;
 				}
-				toggle_ = !toggle_;
+				toggle = !toggle;
 			}
 		}
 		else if constexpr (Global::myLineType == Global::LineType::rhombus) {
-			if (Symbols_.size() >= 3) {
+			if (Symbols.size() >= 3) {
 				// копируем через 3 символа вперёд
-				for (; std::next(std::next(std::next(currentIt))) != Symbols_.end(); currentIt++) {
-					currentIt->setColor(std::next(std::next(std::next(currentIt)))->getColor());
-					currentIt->setSymbol(std::next(std::next(std::next(currentIt)))->getSymbol());
+				for (; currentIt != std::prev(Symbols.end(), 3); currentIt++) {
+					currentIt->setColor(std::next(currentIt, 3)->getColor());
+					currentIt->setSymbol(std::next(currentIt, 3)->getSymbol());
 				}
 				// сгенерировать последним трём новый символ
-				if (toggle_) { // символ и два пробела вокруг
+				if (toggle) { // символ и два пробела вокруг
 					currentIt->setSymbol(generateSymbol(true));
 					currentIt->setColor(generateColor());
 					currentIt++;
@@ -418,7 +468,7 @@ void Line::move(double distance) {
 					currentIt->setSymbol(generateSymbol());
 					currentIt->setColor(generateColor());
 				}
-				toggle_ = !toggle_;
+				toggle = !toggle;
 			}
 		}
 
@@ -437,30 +487,27 @@ void Line::move(double distance) {
 	}
 }
 
-void Line::print(int16_t width, int16_t height) {
+void Line::print(int width, int height) {
 	// Обновляем данные о высоте и ширине экрана
-	width_ = { width };
-	height_ = { height };
+	this->width = width;
+	this->height = height;
 
 	// Проходим по всем символам
-	for (auto& Node : Symbols_) {
+	for (auto &Symbol : Symbols) {
 		// Округляем позицию начала линии до целых
-		int16_t xHeadPosition{ static_cast<int16_t>(x_) };
-		int16_t yHeadPosition{ static_cast<int16_t>(y_) };
+		int xHeadPosition{ static_cast<int>(x) };
+		int yHeadPosition{ static_cast<int>(y) };
 
 		// Узнаём позицию, где фактически должен быть отображён символ
-		int16_t xSymbolPosition{ xHeadPosition + Node.getXOffset() };
-		int16_t ySymbolPosition{ yHeadPosition + Node.getYOffset() };
+		int xSymbolPosition{ xHeadPosition + Symbol.getXOffset() };
+		int ySymbolPosition{ yHeadPosition + Symbol.getYOffset() };
 
 		// Если эти позиции находятся в пределах экрана
-		if (xSymbolPosition == std::clamp(xSymbolPosition, 0i16, width_) &&
-			ySymbolPosition == std::clamp(ySymbolPosition, 0i16, height_) &&
-			xHeadPosition == std::clamp(xHeadPosition, 0i16, width_) &&
-			yHeadPosition == std::clamp(yHeadPosition, 0i16, height_))
+		if (isCoordInsideFrame(xSymbolPosition, ySymbolPosition) && isCoordInsideFrame(xHeadPosition, yHeadPosition))
 			// То печатаем символ
-			Node.print(xSymbolPosition, ySymbolPosition);
+			Symbol.print(xSymbolPosition, ySymbolPosition);
 
 		// Сбрасываем курсор
-		Global::setConsoleCursorPos(0, 0);
+		//Global::setConsoleCursorPos(0, 0);
 	}
 }

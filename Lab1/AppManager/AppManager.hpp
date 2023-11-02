@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 
+#include <chrono>
 #include <iostream>
 #include <string>
 
@@ -10,27 +11,37 @@
 
 
 
+// Конфигурируем типы, которые будут относиться ко времени
+using namespace std::chrono; // используем пространство имён библиотеки <chrono>
+using Clock = steady_clock; // монотонные часы
+using TimeAccuracy = std::milli; // достаточно точности в миллисекунду
+using Duration = duration<double, TimeAccuracy>; // Класс, отображающий длительность времени
+using TimePoint = time_point<Clock, Duration>; // Класс, отображающий точку во времени
+const double timeToSeconds = 0.001; // Сколько секунд в миллисекунде
+
 
 class AppManager {
 private:
-	// Используем минимально возможные типы
-	int16_t width_{};
-	int16_t height_{};
+	// Размеры экрана
+	int width = 0;
+	int height = 0;
 
-	int8_t freq_{};
-	int8_t speed_{};
-	int8_t length_{};
-	bool epilepsy_{};
+	int freq = 0;
+	int speed = 0;
+	int length = 0;
+	bool epilepsy = false;
 
 	// Хранит линию и, до первого смещения, время её создания
-	std::list<std::pair<Line, std::optional<Global::TimePoint>>> LineList_;
+	std::list<std::pair<Line, std::optional<TimePoint>>> Lines;
 
 	// Валидирует ввод, чтобы введённое число находилось на интервале [min, max]
 	int getIntegralFromConsole(std::string_view msg, int min, int max);
 
 	bool getConfirmFromConsole(std::string_view msg);
 
-	bool updateConsoleSizes();
+	void updateConsoleSizes();
+
+	void resetConsoleCursorPos();
 
 	void clearScreen();
 
@@ -38,9 +49,9 @@ public:
 	AppManager();
 	~AppManager() = default;
 
-	void updateScreen(Global::Duration dt);
+	void updateScreen(Duration dt);
 
-	void addLine(Global::TimePoint additionTime);
+	void addLine(TimePoint additionTime);
 
-	int8_t getFrequency() const;
+	int getFrequency() const;
 };

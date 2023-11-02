@@ -1,53 +1,49 @@
 ﻿#include <AppManager.hpp>
 
+#include <algorithm>
+
+
+
+const static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
 AppManager::AppManager() {
-	try {
-		updateConsoleSizes(); // инициируем height_, width_
+	// Получаем текущие размеры окна
+	updateConsoleSizes();
 
-		freq_ = getIntegralFromConsole("частоту появления линий", 1, 30);
-		speed_ = getIntegralFromConsole("скорость линий", 1, 30);
-		length_ = getIntegralFromConsole("длину линий", 1, 30);
-		epilepsy_ = getConfirmFromConsole("режим эпилепсии");
+	// Получаем данные от пользователя
+	freq = getIntegralFromConsole("частоту появления линий", 1, 30);
+	speed = getIntegralFromConsole("скорость линий", 1, 30);
+	length = getIntegralFromConsole("длину линий", 1, 30);
+	epilepsy = getConfirmFromConsole("режим эпилепсии");
 
-		clearScreen();
-	}
-	catch (...) {
-		clearScreen();
-		Global::setConsoleCursorPos(0, 0);
-		std::cerr << "Исключение в AppManager()!" << std::endl;
-		throw;
-	}
+	// Очищаем экран
+	clearScreen();
 }
 
 // dt - прошедшее время в секундах
-void AppManager::updateScreen(Global::Duration dt) {
+void AppManager::updateScreen(Duration dt) {
 	// Проверяем, не изменились ли размеры консоли?
 	updateConsoleSizes();
 
+	auto iterator = Lines.begin();
 	// Для каждой линии
-	for (auto it = LineList_.begin(); it != LineList_.end();) {
-		auto &[currentLine, startTimeOpt] = *it;
+	while (iterator != Lines.end()) {
+		auto &[currentLine, startTimeOpt] = *iterator;
 		// сдвигаем линию туда, где она должна была оказаться с такой скоростью через такое время
-		auto ellapsedTime = dt;
 		if (startTimeOpt) {
-			ellapsedTime += Global::Clock::now() - startTimeOpt.value();
+			dt += Clock::now() - startTimeOpt.value();
 			startTimeOpt = std::nullopt;
 		}
 
-		currentLine.move(speed_ * ellapsedTime.count() * Global::timeToSeconds);
-
-		// получаем координаты начала линии
-		auto x{ currentLine.getX() };
-		auto y{ currentLine.getY() };
+		currentLine.move(speed * dt.count() * timeToSeconds);
 
 		// если координаты начала линии скрылись за пределами отображаемой области
-		if (x != std::clamp(x, static_cast<int16_t>(0), width_) ||
-			y != std::clamp(y, static_cast<int16_t>(0), height_)) {
+		if (!currentLine.isCoordInsideFrame(currentLine.getX(), currentLine.getY())) {
 			// удаляем линию и обновляем итератор
-			it = LineList_.erase(it);
+			iterator = Lines.erase(iterator);
 		}
 		else
-			it++;
+			iterator++;
 	}
 
 	// после окончания основной логики, очищаем экран
@@ -55,56 +51,50 @@ void AppManager::updateScreen(Global::Duration dt) {
 		clearScreen(); // Это решение годится только для низкого FPS, < ~15
 
 	// Выводим все линии в порядке их появления (от старых к новым)
-	for (auto &node : LineList_)
-		node.first.print(width_, height_); // Передаём текущие размеры экрана
+	for (auto &Line : Lines)
+		Line.first.print(width, height); // Передаём текущие размеры экрана
 }
 
-void AppManager::addLine(Global::TimePoint additionTime) {
-	LineList_.push_back(std::make_pair(Line(width_, height_, length_, epilepsy_), additionTime));
+void AppManager::addLine(TimePoint additionTime) {
+	Lines.push_back(std::make_pair(Line(width, height, length, epilepsy), additionTime));
 }
 
 void AppManager::clearScreen() {
 	CONSOLE_SCREEN_BUFFER_INFO s;
-	GetConsoleScreenBufferInfo(Global::hConsole, &s);
+	COORD tl(0, 0);
+	GetConsoleScreenBufferInfo(hConsole, &s);
 	DWORD written, cells = s.dwSize.X * s.dwSize.Y;
-	FillConsoleOutputCharacter(Global::hConsole, ' ', cells, Global::tl, &written);
-	FillConsoleOutputAttribute(Global::hConsole, s.wAttributes, cells, Global::tl, &written);
-	Global::setConsoleCursorPos(0, 0);
+	FillConsoleOutputCharacter(hConsole, ' ', cells, tl, &written);
+	FillConsoleOutputAttribute(hConsole, s.wAttributes, cells, tl, &written);
 }
 
-int8_t AppManager::getFrequency() const {
-	return freq_;
+int AppManager::getFrequency() const {
+	return freq;
 }
 
 int AppManager::getIntegralFromConsole(std::string_view msg, int min, int max) {
 	while (true)
 		try {
-			using namespace std::literals; // operator ""s
+		using namespace std::literals; // operator ""s
 
-			std::string inp;
-			int integer;
+		std::string inp;
+		int integer;
 
-			std::cout << "Пожалуйста, введите " << msg << " в интервале [" << min << ", " << max << "]: ";
-			std::getline(std::cin, inp); // fetch user input, save into inp
-			integer = std::stoi(inp);
+		std::cout << "Пожалуйста, введите " << msg << " в интервале [" << min << ", " << max << "]: ";
+		std::getline(std::cin, inp); // fetch user input, save into inp
+		integer = std::stoi(inp);
 
-			if (std::cin.fail()) throw std::invalid_argument("Ввод не удалось интерпретировать как число!"); // Скорее всего, это исключение вообще никогда не возникнет
-			if (integer < min) throw std::out_of_range("Введённое значение ("s + std::to_string(integer) + ") меньше минимально возможного (" + std::to_string(min) + ")!");
-			if (integer > max) throw std::out_of_range("Введённое значение ("s + std::to_string(integer) + ") больше максимально возможного (" + std::to_string(max) + ")!");
+		if (std::cin.fail()) throw std::invalid_argument("Ввод не удалось интерпретировать как число!"); // Скорее всего, это исключение вообще никогда не возникнет
+		if (integer < min) throw std::out_of_range("Введённое значение ("s + std::to_string(integer) + ") меньше минимально возможного (" + std::to_string(min) + ")!");
+		if (integer > max) throw std::out_of_range("Введённое значение ("s + std::to_string(integer) + ") больше максимально возможного (" + std::to_string(max) + ")!");
 
-			return integer;
-		}
-		catch (const std::exception &e) {
-			clearScreen();
-			Global::setConsoleCursorPos(0, 0);
-			std::cerr << e.what() << std::endl;
-		}
-		catch (...) {
-			clearScreen();
-			Global::setConsoleCursorPos(0, 0);
-			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
-			throw;
-		}
+		return integer;
+	}
+	catch (const std::exception &e) {
+		clearScreen();
+		resetConsoleCursorPos();
+		std::cerr << e.what() << std::endl;
+	}
 }
 
 bool AppManager::getConfirmFromConsole(std::string_view msg) {
@@ -112,48 +102,41 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 
 	while (true)
 		try {
-			using namespace std::literals; // operator ""s
+		using namespace std::literals; // operator ""s
 
-			std::string inp;
+		std::string inp;
 
-			std::cout << "Включить " << msg << "? (Y/N): " << std::endl;
-			std::getline(std::cin, inp); // fetch user input, save into inp
+		std::cout << "Включить " << msg << "? (Y/N): " << std::endl;
+		std::getline(std::cin, inp); // fetch user input, save into inp
 
-			if (std::cin.fail()) throw std::invalid_argument("Ввод не удалось интерпретировать!"); // Скорее всего, это исключение вообще никогда не возникнет
-			if ((inp != "Y" && inp != "N")) throw std::invalid_argument("Введённое значение ("s + inp + ") не подходит!");
+		// Скорее всего, это исключение вообще никогда не возникнет
+		if (std::cin.fail()) throw std::invalid_argument("Ввод не удалось интерпретировать!");
+		// Приводим строку к нижнему регистру
+		std::transform(inp.begin(), inp.end(), inp.begin(),
+			[](std::string::value_type c) { return std::tolower(c); });
+		// Если не введена подходящая команда
+		if ((inp != "y" && inp != "n")) throw std::invalid_argument("Введённое значение ("s + inp + ") не подходит!");
 
-			// В этот момент inp гарантированно содержит либо "Y", либо "N",
-			// достаточно условия только на одно из состояний
-			return (inp == "Y") ? true : false;
-		}
-		catch (const std::exception &e) {
-			clearScreen();
-			Global::setConsoleCursorPos(0, 0);
-			std::cerr << e.what() << std::endl;
-		}
-		catch (...) {
-			clearScreen();
-			Global::setConsoleCursorPos(0, 0);
-			std::cerr << "Неизвестная критическая ошибка!" << std::endl;
-			throw;
-		}
+		// В этот момент inp гарантированно содержит либо "y", либо "n",
+		// достаточно условия только на одно из состояний
+		return (inp == "y") ? true : false;
+	}
+	catch (const std::exception &e) {
+		clearScreen();
+		resetConsoleCursorPos();
+		std::cerr << e.what() << std::endl;
+	}
 }
 
-bool AppManager::updateConsoleSizes() {
+void AppManager::updateConsoleSizes() {
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	GetConsoleScreenBufferInfo(Global::hConsole, &csbi);
+	GetConsoleScreenBufferInfo(hConsole, &csbi);
 
-	auto width{ csbi.srWindow.Right - csbi.srWindow.Left };
-	auto height{ csbi.srWindow.Bottom - csbi.srWindow.Top };
+	width = csbi.srWindow.Right - csbi.srWindow.Left;
+	height = csbi.srWindow.Bottom - csbi.srWindow.Top;
+}
 
-	if (width == 0 || height == 0)
-		throw std::runtime_error{ "AppManager::getConsoleInfo() : Не удалось определить размер консоли!" };
-
-	if (width != width_ || height_ != height) {
-		width_ = width;
-		height_ = height;
-		return true;
-	}
-
-	return false;
+void AppManager::resetConsoleCursorPos() {
+	COORD tl(0, 0);
+	SetConsoleCursorPosition(hConsole, tl);
 }

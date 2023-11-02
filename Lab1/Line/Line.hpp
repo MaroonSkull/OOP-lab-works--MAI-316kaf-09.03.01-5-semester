@@ -11,28 +11,31 @@
 
 class Line {
 private:
-	std::list<Symbol> Symbols_;
+	std::list<Symbol> Symbols;
 	// базовые координаты, от которых начинается линия
-	double x_{};
-	double y_{};
+	double x = 0.0;
+	double y = 0.0;
 
-	int8_t xOffsetCounter_{};
-	int8_t yOffsetCounter_{};
+	int xOffsetCounter = 0;
+	int yOffsetCounter = 0;
 
-	bool toggle_{};
+	bool toggle = false;
 
-	int16_t width_{};
-	int16_t height_{};
-	int8_t length_{};
-	bool epilepsy_{};
-	int8_t lineColor_{}; // можно вынести в LineTraits, но мне не жалко лишний байт
+	int width = 0;
+	int height = 0;
+	int length = 0;
+	bool epilepsy = false;
+	int lineColor = 0;
 
 	char generateSymbol(bool isSpace = false);
 
-	int8_t generateColor();
+	int generateColor();
 
 public:
-	Line(int16_t width, int16_t height, int8_t length, bool epilepsy);
+	Line(int width, int height, int length, bool epilepsy);
+
+	// Проверка, находится ли координата внутри окна
+	bool isCoordInsideFrame(int x, int y) const;
 
 	// Добавляет ровно один символ в линию
 	void addSymbol(bool isSpace = false);
@@ -40,14 +43,14 @@ public:
 	void move(double distance);
 
 	// Печатает те символы, которые находятся внутри экрана
-	void print(int16_t width, int16_t height);
+	void print(int width, int height);
 
-	// геттеры и сеттеры можно указывать в заголовочных файлах
-	int16_t getX() const {
-		return static_cast<int16_t>(x_);
+	// геттеры можно указывать в заголовочных файлах
+	int getX() const {
+		return x;
 	}
 
-	int16_t getY() const {
-		return static_cast<int16_t>(y_);
+	int getY() const {
+		return y;
 	}
 };
