@@ -2,7 +2,6 @@
 
 
 
-// УДАЛИТЬ
 namespace Global {
 	enum class Direction {
 		leftToRight,
