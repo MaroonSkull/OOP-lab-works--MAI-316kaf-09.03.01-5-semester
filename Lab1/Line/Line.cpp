@@ -151,6 +151,8 @@ void Line::move(double distance) {
 	int stepsY = static_cast<int>(this->y) - y; // вертикально
 	int stepsX = static_cast<int>(this->x) - x; // горизонтально
 
+	// запоминаем длину смещения
+	steps = std::abs(stepsX) + std::abs(stepsY);
 
 	// Если целочисленно нам пора бы уже сместиться
 	while (stepsX != 0 || stepsY != 0) {
@@ -401,6 +403,7 @@ void Line::move(double distance) {
 					x--;
 				}
 			}
+		
 		// Так же необходимо сместить в обратную сторону символы и их цвета
 		if constexpr (Global::myLineType == Global::LineType::line) {
 			if (Symbols.size() >= 1) {
@@ -493,19 +496,33 @@ void Line::print(int width, int height) {
 	this->width = width;
 	this->height = height;
 
+	int symbolsCount = 0;
+	if constexpr (Global::myLineType == Global::LineType::line)
+		symbolsCount = steps;
+	else if constexpr (Global::myLineType == Global::LineType::zigzag)
+		symbolsCount = steps * 2;
+	else if constexpr (Global::myLineType == Global::LineType::rhombus)
+		symbolsCount = steps * 3;
+	
+	symbolsCount = std::clamp(symbolsCount, 0, static_cast<int>(Symbols.size()));
+
+	auto start = Symbols.rbegin();
+	auto end = std::next(start, symbolsCount);
+
 	// Проходим по всем символам
-	for (auto &Symbol : Symbols) {
+	for (; start != end; start++) {
 		// Округляем позицию начала линии до целых
 		int xHeadPosition{ static_cast<int>(x) };
 		int yHeadPosition{ static_cast<int>(y) };
 
 		// Узнаём позицию, где фактически должен быть отображён символ
-		int xSymbolPosition{ xHeadPosition + Symbol.getXOffset() };
-		int ySymbolPosition{ yHeadPosition + Symbol.getYOffset() };
+		int xSymbolPosition{ xHeadPosition + start->getXOffset() };
+		int ySymbolPosition{ yHeadPosition + start->getYOffset() };
 
 		// Если эти позиции находятся в пределах экрана
 		if (isCoordInsideFrame(xSymbolPosition, ySymbolPosition) && isCoordInsideFrame(xHeadPosition, yHeadPosition))
 			// То печатаем символ
-			Symbol.print(xSymbolPosition, ySymbolPosition);
+			start->print(xSymbolPosition, ySymbolPosition);
 	}
+	steps = 0;
 }

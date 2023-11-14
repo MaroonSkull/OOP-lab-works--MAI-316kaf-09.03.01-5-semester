@@ -17,6 +17,9 @@ private:
 	int xOffsetCounter = 0;
 	int yOffsetCounter = 0;
 
+	// На сколько символов переместилась линия в последний раз
+	int steps = 0;
+
 	bool toggle = false;
 
 	int width = 0;

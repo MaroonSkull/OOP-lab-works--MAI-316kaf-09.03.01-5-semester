@@ -26,5 +26,7 @@ void Symbol::print(int x, int y) {
 void Symbol::print(int x, int y, char symbol) {
 	setConsoleCursorPos(x, y);
 	setConsoleColor(color);
-	std::cout << symbol;
+	LPDWORD success = NULL;
+	WriteConsole(hConsole, &symbol, 1, success, 0);
+	//std::cout << symbol;
 }

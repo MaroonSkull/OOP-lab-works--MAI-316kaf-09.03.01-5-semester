@@ -28,6 +28,8 @@ void AppManager::updateScreen(Duration dt) {
 	// Проверяем, не изменились ли размеры консоли?
 	updateConsoleSizes();
 
+	auto distance = speed * dt.count() * timeToSeconds;
+
 	auto iterator = Lines.begin();
 	// Для каждой линии
 	while (iterator != Lines.end()) {
@@ -38,7 +40,7 @@ void AppManager::updateScreen(Duration dt) {
 			startTimeOpt = std::nullopt;
 		}
 
-		currentLine.move(speed * dt.count() * timeToSeconds);
+		currentLine.move(distance);
 
 		// если координаты начала линии скрылись за пределами отображаемой области
 		if (!currentLine.isCoordInsideFrame(currentLine.getX(), currentLine.getY())) {
