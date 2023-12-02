@@ -1,4 +1,5 @@
 ﻿#include <Line.hpp>
+#include <algorithm>
 
 char Line::generateSymbol(bool isSpace) {
 	return isSpace ? ' ' : static_cast<char>(Global::getRandomUniformDistribution(33, 126));;
@@ -408,14 +409,14 @@ void Line::print(Buffer &Buff, int16_t width, int16_t height) {
 		int16_t yHeadPosition{ static_cast<int16_t>(y_) };
 
 		// Узнаём позицию, где фактически должен быть отображён символ
-		int16_t xSymbolPosition{ xHeadPosition + Node.getXOffset() };
-		int16_t ySymbolPosition{ yHeadPosition + Node.getYOffset() };
+		int16_t xSymbolPosition{ static_cast<int16_t>(xHeadPosition + Node.getXOffset()) };
+		int16_t ySymbolPosition{ static_cast<int16_t>(yHeadPosition + Node.getYOffset()) };
 
 		// Если эти позиции находятся в пределах экрана
-		if (xSymbolPosition == std::clamp(xSymbolPosition, 0i16, width_) &&
-			ySymbolPosition == std::clamp(ySymbolPosition, 0i16, height_) &&
-			xHeadPosition == std::clamp(xHeadPosition, 0i16, width_) &&
-			yHeadPosition == std::clamp(yHeadPosition, 0i16, height_))
+		if (xSymbolPosition == std::clamp(xSymbolPosition, static_cast<int16_t>(0), width_) &&
+			ySymbolPosition == std::clamp(ySymbolPosition, static_cast<int16_t>(0), height_) &&
+			xHeadPosition == std::clamp(xHeadPosition, static_cast<int16_t>(0), width_) &&
+			yHeadPosition == std::clamp(yHeadPosition, static_cast<int16_t>(0), height_))
 			// То печатаем символ
 			Node.print(Buff, xSymbolPosition, ySymbolPosition);
 		};

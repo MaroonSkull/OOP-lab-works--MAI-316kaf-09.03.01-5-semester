@@ -5,7 +5,8 @@
 #include <functional>
 #include <string>
 
-#include <Windows.h>
+//#include <Windows.h>
+#include <ncurses.h>
 
 #include <Line.hpp>
 #include <Buffer.hpp>
@@ -51,11 +52,18 @@ private:
 			std::string inp;
 			_Ty integer;
 
-			std::cout << "Please, enter " << msg << " in [" << min << ", " << max << "]: ";
-			std::getline(std::cin, inp); // fetch user input, save into inp
+			printw("Please, enter %s in [%d, %d]: \n", msg.data(), min, max);//std::cout << "Please, enter " << msg << " in [" << min << ", " << max << "]: ";
+			refresh();
+			//std::getline(std::cin, inp); // fetch user input, save into inp
+			int ch = getch();
+			while ( ch != '\n' ) {
+				inp.push_back( ch );
+				ch = getch();
+			}
+
 			integer = getIntegralFromString(inp);
 
-			if (std::cin.fail()) throw std::invalid_argument("The input could not be interpreted as a number!"); // Скорее всего, это исключение вообще никогда не возникнет
+			//if (std::cin.fail()) throw std::invalid_argument("The input could not be interpreted as a number!"); // Скорее всего, это исключение вообще никогда не возникнет
 			if (integer < min) throw std::out_of_range("Entered value ("s + std::to_string(integer) + ") less than the minimum possible (" + std::to_string(min) + ")!");
 			if (integer > max) throw std::out_of_range("Entered value ("s + std::to_string(integer) + ") more than the maximum possible (" + std::to_string(max) + ")!");
 
@@ -63,13 +71,15 @@ private:
 		}
 		catch (const std::exception &e) {
 			clearScreen();
-			Global::setConsoleCursorPos(0, 0);
-			std::cerr << e.what() << std::endl;
+			move(0, 0);//Global::setConsoleCursorPos(0, 0);
+			printw("%s\n", e.what());//std::cerr << e.what() << std::endl;
+			refresh();
 		}
 		catch (...) {
 			clearScreen();
-			Global::setConsoleCursorPos(0, 0);
-			std::cerr << "Unknown critical error!" << std::endl;
+			move(0, 0);//Global::setConsoleCursorPos(0, 0);
+			printw("Unknown critical error!\n");//std::cerr << "Unknown critical error!" << std::endl;
+			refresh();
 			throw;
 		}
 	}

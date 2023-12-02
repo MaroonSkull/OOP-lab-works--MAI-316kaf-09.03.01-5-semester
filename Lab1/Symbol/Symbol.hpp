@@ -1,10 +1,5 @@
 ﻿#pragma once
 
-
-#include <iostream>
-
-#include <Windows.h>
-
 #include <Global.hpp>
 #include <Buffer.hpp>
 

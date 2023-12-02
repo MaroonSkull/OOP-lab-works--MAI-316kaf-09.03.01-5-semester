@@ -3,9 +3,6 @@
 #include <chrono>
 #include <random>
 
-#include <Windows.h>
-
-
 
 namespace Global {
 
@@ -42,21 +39,6 @@ namespace Global {
 	static constexpr auto myDirection{ Direction::downToUp };
 	static constexpr auto myLineType{ LineType::line };
 	static constexpr auto myEpilepsyType{ EpilepsyType::symbol };
-
-	const static COORD tl = { 0, 0 };
-	const static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-	template <typename T>
-	void setConsoleColor(T ForgC) {
-		WORD wColor = static_cast<WORD>(ForgC & 0x0F);
-		SetConsoleTextAttribute(hConsole, wColor);
-	}
-
-	template <typename T>
-	void setConsoleCursorPos(T x, T y) {
-		COORD pos = { static_cast<SHORT>(x), static_cast<SHORT>(y) };
-		SetConsoleCursorPosition(hConsole, pos);
-	}
 
 	static std::random_device rd;
 	static std::ranlux24_base engine(rd());

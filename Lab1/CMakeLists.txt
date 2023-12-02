@@ -20,6 +20,11 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
+# Add ncurses for linux
+if (UNIX)
+    find_package(Curses REQUIRED)
+endif (UNIX)
+
 add_library(Globals INTERFACE)
 add_dependencies (${PROJECT_NAME} Globals)
 
@@ -37,6 +42,7 @@ foreach (library
     Line
     Symbol
     Globals
+    curses
 )
     target_link_libraries (${PROJECT_NAME} PRIVATE ${library})
 endforeach ()

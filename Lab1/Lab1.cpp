@@ -1,6 +1,9 @@
-﻿#include <algorithm> // std::sort
+﻿#include "Global.hpp"
+#include <algorithm> // std::sort
 #include <array> // std::array
 #include <iostream>
+#include <thread> // sleep
+#include <ncurses.h>
 
 #include <AppManager.hpp>
 #include <Buffer.hpp>
@@ -9,6 +12,23 @@
 
 int main() {
 	using namespace Global;
+	// запуск ncurses
+	initscr();
+	cbreak();
+	if (has_colors() == FALSE) {
+        endwin();
+        std::cerr << "Ваш терминал не поддерживает цвет" << std::endl;
+        return -3;
+    }
+    start_color();
+    init_pair(0, 0, COLOR_BLACK);
+    init_pair(1, 1, COLOR_BLACK);
+    init_pair(2, 2, COLOR_BLACK);
+    init_pair(3, 3, COLOR_BLACK);
+    init_pair(4, 4, COLOR_BLACK);
+    init_pair(5, 5, COLOR_BLACK);
+    init_pair(6, 6, COLOR_BLACK);
+    init_pair(7, 7, COLOR_BLACK);
 
 	// Используем двойную буфферизацию
 	std::array<Buffer, 2> Buffers{};
@@ -84,27 +104,35 @@ int main() {
 
 			// Отображаем текущий FPS
 			if constexpr (showFPS) {
-				setConsoleColor(15);
-				std::cout << "FPS = " << 1. / (getFrameTime().count() * timeToSeconds) << std::endl;
-				setConsoleCursorPos(0, 0);
+				//setConsoleColor(15);
+				move(0, 0);//setConsoleCursorPos(0, 0);
+				printw("FPS = %f", 1. / (getFrameTime().count() * timeToSeconds));//std::cout << "FPS = " << 1. / (getFrameTime().count() * timeToSeconds) << std::endl;
+				move(0, 0);//setConsoleCursorPos(0, 0);
+				refresh();
 			}
 
 			// Если успели быстрее, ждём начала следующего кадра, чтобы не греть кремний
 			constexpr Duration minTimePerFrame{ 1. / (Global::maxFPS * timeToSeconds) };
-			if (getFrameTime() < minTimePerFrame)
-				Sleep(static_cast<DWORD>((minTimePerFrame - getFrameTime()).count()));
+			//if (getFrameTime() < minTimePerFrame)
+				//Sleep(static_cast<DWORD>((minTimePerFrame - getFrameTime()).count()));
+			Duration frameTime = Clock::now() - frameStartTime;
+			if (frameTime < minTimePerFrame)
+				std::this_thread::sleep_for(minTimePerFrame - frameTime);
 		}
 	}
 	catch (const std::exception &e) {
-		setConsoleCursorPos(0, 0);
+		move(0, 0);//setConsoleCursorPos(0, 0);
 		std::cerr << "std::exception: " << e.what() << std::endl;
+		endwin();
 		return -1;
 	}
 	catch (...) {
-		setConsoleCursorPos(0, 0);
+		move(0, 0);//setConsoleCursorPos(0, 0);
 		std::cerr << "unexpected exception!" << std::endl;
+		endwin();
 		return -2;
 	}
 
+	endwin();
 	return 0;
 }
