@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 
+#include <cstdint>
 #include <iostream>
 #include <functional>
 #include <string>
@@ -23,6 +24,9 @@ private:
 	int8_t speed_{};
 	int8_t length_{};
 	bool epilepsy_{};
+	int16_t probability_{};
+	int8_t minR_{};
+	int8_t maxR_{};
 
 	// Хранит линию и, до первого смещения, время её создания
 	std::list<std::pair<Line, std::optional<Global::TimePoint>>> LineList_;
@@ -52,7 +56,7 @@ private:
 			std::string inp;
 			_Ty integer;
 
-			printw("Please, enter %s in [%d, %d]: \n", msg.data(), min, max);//std::cout << "Please, enter " << msg << " in [" << min << ", " << max << "]: ";
+			printw("Please, enter %s in [%d, %d]: ", msg.data(), min, max);//std::cout << "Please, enter " << msg << " in [" << min << ", " << max << "]: ";
 			refresh();
 			//std::getline(std::cin, inp); // fetch user input, save into inp
 			int ch = getch();

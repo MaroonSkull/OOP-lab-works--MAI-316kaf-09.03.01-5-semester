@@ -1,6 +1,7 @@
 ﻿#include "Global.hpp"
 #include <algorithm> // std::sort
 #include <array> // std::array
+#include <chrono>
 #include <iostream>
 #include <thread> // sleep
 #include <ncurses.h>
@@ -106,18 +107,15 @@ int main() {
 			if constexpr (showFPS) {
 				//setConsoleColor(15);
 				move(0, 0);//setConsoleCursorPos(0, 0);
-				printw("FPS = %f", 1. / (getFrameTime().count() * timeToSeconds));//std::cout << "FPS = " << 1. / (getFrameTime().count() * timeToSeconds) << std::endl;
+				printw("FPS = %f", 1. / (duration_cast<Duration>(Clock::now() - frameStartTime).count() * timeToSeconds));//std::cout << "FPS = " << 1. / (getFrameTime().count() * timeToSeconds) << std::endl;
 				move(0, 0);//setConsoleCursorPos(0, 0);
 				refresh();
 			}
 
 			// Если успели быстрее, ждём начала следующего кадра, чтобы не греть кремний
 			constexpr Duration minTimePerFrame{ 1. / (Global::maxFPS * timeToSeconds) };
-			//if (getFrameTime() < minTimePerFrame)
-				//Sleep(static_cast<DWORD>((minTimePerFrame - getFrameTime()).count()));
-			Duration frameTime = Clock::now() - frameStartTime;
-			if (frameTime < minTimePerFrame)
-				std::this_thread::sleep_for(minTimePerFrame - frameTime);
+			if (Clock::now() - frameStartTime < minTimePerFrame)
+				std::this_thread::sleep_for(minTimePerFrame - (Clock::now() - frameStartTime));
 		}
 	}
 	catch (const std::exception &e) {

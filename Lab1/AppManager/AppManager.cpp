@@ -10,6 +10,9 @@ AppManager::AppManager() {
 		speed_ = getIntegralFromConsole("speed", 1, 30);
 		length_ = getIntegralFromConsole("length", 1, 30);
 		epilepsy_ = getConfirmFromConsole("epilepsy");
+		probability_ = getIntegralFromConsole("probability", 1, 1000);
+		minR_ = getIntegralFromConsole("minimum radius", 1, 10);
+		maxR_ = getIntegralFromConsole("maximum radius", static_cast<int>(minR_), 10);
 
 		clearScreen();
 	}
