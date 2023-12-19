@@ -1,4 +1,4 @@
-﻿#include <AppManager.hpp>
+#include <AppManager.hpp>
 #include <algorithm>
 #include <ncurses.h>
 
@@ -19,7 +19,8 @@ AppManager::AppManager() {
 	catch (...) {
 		clearScreen();
 		move(0, 0);//Global::setConsoleCursorPos(0, 0);
-		std::cerr << "Exception in AppManager()!" << std::endl;
+		printw("Exception in AppManager()!");//std::cerr << "Exception in AppManager()!" << std::endl;
+		refresh();
 		throw;
 	}
 }

@@ -120,14 +120,14 @@ int main() {
 	}
 	catch (const std::exception &e) {
 		move(0, 0);//setConsoleCursorPos(0, 0);
-		std::cerr << "std::exception: " << e.what() << std::endl;
 		endwin();
+		std::cerr << "std::exception: " << e.what() << std::endl;
 		return -1;
 	}
 	catch (...) {
 		move(0, 0);//setConsoleCursorPos(0, 0);
-		std::cerr << "unexpected exception!" << std::endl;
 		endwin();
+		std::cerr << "unexpected exception!" << std::endl;
 		return -2;
 	}
 
