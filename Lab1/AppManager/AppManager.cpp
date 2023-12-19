@@ -1,4 +1,4 @@
-#include <AppManager.hpp>
+﻿#include <AppManager.hpp>
 #include <algorithm>
 #include <ncurses.h>
 
@@ -6,13 +6,21 @@ AppManager::AppManager() {
 	try {
 		updateConsoleSizes(); // инициируем height_, width_
 
-		freq_ = getIntegralFromConsole("frequency", 1, 30);
+		/*freq_ = getIntegralFromConsole("frequency", 1, 30);
 		speed_ = getIntegralFromConsole("speed", 1, 30);
 		length_ = getIntegralFromConsole("length", 1, 30);
 		epilepsy_ = getConfirmFromConsole("epilepsy");
 		probability_ = getIntegralFromConsole("probability", 1, 1000);
 		minR_ = getIntegralFromConsole("minimum radius", 1, 10);
 		maxR_ = getIntegralFromConsole("maximum radius", static_cast<int>(minR_), 10);
+*/
+		freq_ = 1;
+		speed_ = 2;
+		length_ = 8;
+		epilepsy_ = true;
+		probability_ = 100;
+		minR_ = 3;
+		maxR_ = 5;
 
 		clearScreen();
 	}
@@ -41,7 +49,21 @@ void AppManager::updateScreen(Buffer &Buff, Global::Duration dt) {
 			startTimeOpt = std::nullopt;
 		}
 		
-		currentLine.move(Buff, speed_ * ellapsedTime.count() * Global::timeToSeconds);
+		bool wasThereAShift {currentLine.move(Buff, speed_ * ellapsedTime.count() * Global::timeToSeconds)};
+
+		// Решаем, должна ли взорваться линия
+		if (wasThereAShift && Global::getRandomUniformDistribution(0, 1000) < probability_) {
+			auto explosionStartPosition = currentLine.tailCut(); 
+			if (explosionStartPosition) {
+				auto maxR{ (minR_ == maxR_) ? minR_ : Global::getRandomUniformDistribution(minR_, maxR_) };
+				ExplosionList_.push_back(Explosion(width_, height_, maxR, explosionStartPosition.value()));
+			}
+			else {
+				// удаляем линию и обновляем итератор
+				it = LineList_.erase(it);
+				continue;
+			}
+		}
 
 		// получаем координаты начала линии
 		auto x{ currentLine.getX() };
@@ -57,10 +79,20 @@ void AppManager::updateScreen(Buffer &Buff, Global::Duration dt) {
 			it++;
 	}
 
+	// Двигаем все существующие взрывы с фиксированной скоростью 2 символа в секунду
+	for (auto Explosion = ExplosionList_.begin(); Explosion != ExplosionList_.end();) {
+		if (Explosion->move(Buff, 2 * dt.count() * Global::timeToSeconds))
+			Explosion = ExplosionList_.erase(Explosion);
+		else
+			Explosion++;
+	}
+
 	// Передаём текущие размеры экрана
 	auto printLine = [this, &Buff](auto &Line) { Line.first.print(Buff, width_, height_); };
-	// Выводим все линии в порядке их появления (от старых к новым)
+	auto printExplosion = [this, &Buff](auto &Explosion) { Explosion.print(Buff, width_, height_); };
+	// Выводим все линии и взрывы в порядке их появления (от старых к новым)
 	std::ranges::for_each(LineList_, printLine);
+	std::ranges::for_each(ExplosionList_, printExplosion);
 }
 
 void AppManager::addLine(Global::TimePoint &&additionTime) {

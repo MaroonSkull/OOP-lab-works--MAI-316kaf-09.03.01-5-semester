@@ -2,14 +2,16 @@
 
 
 #include <Figure.hpp>
+#include <cstdint>
 
 
 
 class Explosion : public Figure {
 private:
-	int8_t R_{};
+	double R_{};
+  int8_t maxR_{};
 public:
-  Explosion(int16_t width, int16_t height, int8_t R, bool epilepsy);
+  Explosion(int16_t width, int16_t height, int8_t maxR, std::pair<double, double> startPosition);
 
-  virtual void move(Buffer &Buff, double distance);
+  virtual bool move(Buffer &Buff, double distance);
 };

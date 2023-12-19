@@ -7,11 +7,13 @@
 
 class Line : public Figure {
 private:
-    bool toggle_{};
-
+  bool toggle_{};
+  
 	int8_t length_{};
 public:
   Line(int16_t width, int16_t height, int8_t length, bool epilepsy);
 
-  virtual void move(Buffer &Buff, double distance);
+  virtual bool move(Buffer &Buff, double distance);
+
+  std::optional<std::pair<double, double>> tailCut(); // возвращает true, если удалось обрезать
 };

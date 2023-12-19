@@ -2,7 +2,6 @@
 
 
 #include <cstdint>
-#include <iostream>
 #include <functional>
 #include <string>
 
@@ -10,6 +9,7 @@
 #include <ncurses.h>
 
 #include <Line.hpp>
+#include <Explosion.hpp>
 #include <Buffer.hpp>
 
 
@@ -30,6 +30,7 @@ private:
 
 	// Хранит линию и, до первого смещения, время её создания
 	std::list<std::pair<Line, std::optional<Global::TimePoint>>> LineList_;
+	std::list<Explosion> ExplosionList_;
 
 	// Валидирует ввод, чтобы введённое число находилось на интервале [min, max]
 	template <std::integral _Ty>

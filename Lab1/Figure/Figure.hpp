@@ -41,6 +41,7 @@ protected:
 
 public:
 	Figure(int16_t width, int16_t height, bool epilepsy) : width_{ width }, height_{ height }, epilepsy_{ epilepsy } {}
+	Figure(int16_t width, int16_t height, double x, double y) : width_{ width }, height_{ height }, x_{ x }, y_{ y }, epilepsy_{ true } {}
 
         // Добавляет ровно один символ в линию
 	void addSymbol(bool isSpace = false) {
@@ -54,7 +55,7 @@ public:
 	}
 
 
-	virtual void move(Buffer& Buff, double distance) = 0;
+	virtual bool move(Buffer& Buff, double distance) = 0;
 
 	// Печатает те символы, которые находятся внутри экрана
 	void print(Buffer &Buff, int16_t width, int16_t height) {

@@ -1,4 +1,5 @@
 ﻿#include <Line.hpp>
+#include <optional>
 
 Line::Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
 	: Figure(width, height, epilepsy)
@@ -66,8 +67,8 @@ Line::Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
 		figureColor_ = static_cast<int8_t>(Global::getRandomUniformDistribution(1, 15));
 }
 
-void Line::move(Buffer &Buff, double distance) {
-
+bool Line::move(Buffer &Buff, double distance) {
+	bool wasThereAShift{false}; // регистрирует, было ли смещение у готовой линии хотя бы на 1 символ
 	// Получаем текущую позицию начала линии
 	int16_t x{ static_cast<int16_t>(x_) };
 	int16_t y{ static_cast<int16_t>(y_) };
@@ -286,7 +287,10 @@ void Line::move(Buffer &Buff, double distance) {
 			}
 			continue;
 		}
+		
 		// Мы уже добавили всё, что только могли, теперь остаётся только перемещать уже существующие символы
+		// В этот момент линии становятся взрываемыми
+		wasThereAShift = {true};
 		auto currentIt = Symbols_.begin();
 		// Необходимо сместить в обратную сторону символы и их цвета
 		if constexpr (Global::myLineType == Global::LineType::line) {
@@ -373,4 +377,113 @@ void Line::move(Buffer &Buff, double distance) {
 			stepsX++;
 		}
 	}
+	return wasThereAShift;
+}
+
+// удаляет один символ из конца, возвращаем его координаты
+// todo возможно стоит его/их сразу затирать
+std::optional<std::pair<double, double>> Line::tailCut() {
+	if (Symbols_.size() < 1)
+		return std::nullopt;
+	
+	auto explosionStartPosition{ std::make_pair(x_, y_) };
+	if constexpr (Global::myDirection == Global::Direction::upToDown) {
+		y_--;
+	}
+	else if constexpr (Global::myDirection == Global::Direction::downToUp) {
+		y_++;
+	}
+	else if constexpr (Global::myDirection == Global::Direction::leftToRight) {
+		x_--;
+	}
+	else if constexpr (Global::myDirection == Global::Direction::rightToLeft) {
+		x_++;
+	}
+
+	auto currentIt = Symbols_.rbegin();
+	if constexpr (Global::myLineType == Global::LineType::line) {
+		if (Symbols_.size() >= 1) {
+			for (; std::next(currentIt) != Symbols_.rend(); currentIt++) {
+				// копируем только один символ
+				currentIt->setColor(std::next(currentIt)->getColor());
+				currentIt->setSymbol(std::next(currentIt)->getSymbol());
+			}
+			// сгенерировать последнему новый символ
+			currentIt->setSymbol(generateSymbol());
+			currentIt->setColor(generateColor());
+			// Удаляем символ у головы
+			Symbols_.pop_front();
+			length_--;
+		}
+	}
+	else if constexpr (Global::myLineType == Global::LineType::zigzag) {
+		if (Symbols_.size() >= 2) {
+			for (; std::next(currentIt, 2) != Symbols_.rend(); currentIt++) {
+				// копируем на два символа вперёд
+				currentIt->setColor(std::next(currentIt, 2)->getColor());
+				currentIt->setSymbol(std::next(currentIt, 2)->getSymbol());
+			}
+			// сгенерировать последним двум новый символ
+			if (toggle_) { // в основной линии символ
+				currentIt->setSymbol(generateSymbol());
+				currentIt->setColor(generateColor());
+				currentIt++;
+				currentIt->setSymbol(generateSymbol(true));
+				currentIt->setColor(generateColor());
+				currentIt--;
+			}
+			else {
+				currentIt->setSymbol(generateSymbol(true));
+				currentIt->setColor(generateColor());
+				currentIt++;
+				currentIt->setSymbol(generateSymbol());
+				currentIt->setColor(generateColor());
+				currentIt--;
+			}
+			toggle_ = !toggle_;
+			// Удаляем символы у головы
+			Symbols_.pop_front();
+			Symbols_.pop_front();
+			length_--;
+		}
+	}
+	else if constexpr (Global::myLineType == Global::LineType::rhombus) {
+		if (Symbols_.size() >= 3) {
+			// копируем через 3 символа вперёд
+			for (; std::next(currentIt, 3) != Symbols_.rend(); currentIt++) {
+				currentIt->setColor(std::next(currentIt, 3)->getColor());
+				currentIt->setSymbol(std::next(currentIt, 3)->getSymbol());
+			}
+			// сгенерировать последним трём новый символ
+			if (toggle_) { // символ и два пробела вокруг
+				currentIt->setSymbol(generateSymbol(true));
+				currentIt->setColor(generateColor());
+				currentIt++;
+				currentIt->setSymbol(generateSymbol());
+				currentIt->setColor(generateColor());
+				currentIt++;
+				currentIt->setSymbol(generateSymbol(true));
+				currentIt->setColor(generateColor());
+			}
+			else { // два символа вокруг пробела
+				currentIt->setSymbol(generateSymbol());
+				currentIt->setColor(generateColor());
+				currentIt++;
+				currentIt->setSymbol(generateSymbol(true));
+				currentIt->setColor(generateColor());
+				currentIt++;
+				currentIt->setSymbol(generateSymbol());
+				currentIt->setColor(generateColor());
+			}
+			toggle_ = !toggle_;
+			// Удаляем символы у головы
+			Symbols_.pop_front();
+			Symbols_.pop_front();
+			Symbols_.pop_front();
+			length_--;
+		}
+	}
+
+	return explosionStartPosition;
+	
 }

@@ -11,5 +11,6 @@ target_compile_features (AppManager PUBLIC cxx_std_20)
 
 target_link_libraries (AppManager
 	PUBLIC Line
+	PUBLIC Explosion
 	PRIVATE Buffer
 )
