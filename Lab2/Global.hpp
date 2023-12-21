@@ -36,8 +36,8 @@ namespace Global {
 		line
 	};
 
-	static constexpr auto myDirection{ Direction::downToUp };
-	static constexpr auto myLineType{ LineType::line };
+	static constexpr auto myDirection{ Direction::upToDown };
+	static constexpr auto myLineType{ LineType::zigzag };
 	static constexpr auto myEpilepsyType{ EpilepsyType::symbol };
 
 	static std::random_device rd;

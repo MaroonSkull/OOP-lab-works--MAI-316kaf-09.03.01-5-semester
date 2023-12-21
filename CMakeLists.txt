@@ -4,9 +4,9 @@
 cmake_minimum_required (VERSION 3.12)
 
 project ("TheMatrix_Beginning"
-    VERSION 1.2
-    DESCRIPTION "Универсальное решение первой лабораторной работы по ООП с использованием двойной буферизации"
-    HOMEPAGE_URL "https://github.com/MaroonSkull/OOP-lab-works--MAI-316kaf-09.03.01-5-semester/tree/Lab1"
+    VERSION 1.0
+    DESCRIPTION "Универсальное решение второй лабораторной работы по ООП с использованием двойной буферизации"
+    HOMEPAGE_URL "https://github.com/MaroonSkull/OOP-lab-works--MAI-316kaf-09.03.01-5-semester/tree/Lab2_doubleBuffering_ncurses"
     LANGUAGES CXX
 )
 
@@ -19,4 +19,4 @@ endif ()
 
 
 # Include sub-projects.
-add_subdirectory ("Lab1")
+add_subdirectory ("Lab2")

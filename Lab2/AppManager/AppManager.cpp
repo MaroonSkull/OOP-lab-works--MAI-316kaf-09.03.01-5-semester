@@ -6,21 +6,13 @@ AppManager::AppManager() {
 	try {
 		updateConsoleSizes(); // инициируем height_, width_
 
-		/*freq_ = getIntegralFromConsole("frequency", 1, 30);
+		freq_ = getIntegralFromConsole("frequency", 1, 30);
 		speed_ = getIntegralFromConsole("speed", 1, 30);
 		length_ = getIntegralFromConsole("length", 1, 30);
 		epilepsy_ = getConfirmFromConsole("epilepsy");
 		probability_ = getIntegralFromConsole("probability", 1, 1000);
 		minR_ = getIntegralFromConsole("minimum radius", 1, 10);
 		maxR_ = getIntegralFromConsole("maximum radius", static_cast<int>(minR_), 10);
-*/
-		freq_ = 1;
-		speed_ = 2;
-		length_ = 8;
-		epilepsy_ = true;
-		probability_ = 100;
-		minR_ = 3;
-		maxR_ = 5;
 
 		clearScreen();
 	}
