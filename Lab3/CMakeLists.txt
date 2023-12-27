@@ -3,15 +3,15 @@
 #
 cmake_minimum_required (VERSION 3.12)
 
-project ("Lab2"
+project ("Lab3"
     VERSION 1.0
-    DESCRIPTION "Решение первой лабораторной работы по предмету Объектно-ориентированное программирование"
+    DESCRIPTION "Решение третьей лабораторной работы по предмету Объектно-ориентированное программирование"
     HOMEPAGE_URL "https://lms.mai.ru/course/view.php?id=2515"
     LANGUAGES CXX
 )
 
 # Add source to this project's executable.
-add_executable (${PROJECT_NAME} "Lab2.cpp")
+add_executable (${PROJECT_NAME} "Lab3.cpp")
 target_compile_features (${PROJECT_NAME} PUBLIC cxx_std_17)
 
 # Enable Hot Reload for MSVC compilers if supported.
