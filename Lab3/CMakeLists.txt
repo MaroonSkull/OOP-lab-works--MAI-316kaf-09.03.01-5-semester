@@ -30,6 +30,10 @@ add_dependencies (${PROJECT_NAME} Globals)
 
 target_include_directories(Globals INTERFACE ./)
 
+# Add containers
+add_subdirectory("Containers")
+
+# Add Lab code
 add_subdirectory ("Buffer")
 add_subdirectory ("Symbol")
 add_subdirectory ("Figure")
@@ -37,6 +41,7 @@ add_subdirectory ("AppManager")
 
 # link libraries
 foreach (library
+    Containers
     Buffer
     AppManager
     Line

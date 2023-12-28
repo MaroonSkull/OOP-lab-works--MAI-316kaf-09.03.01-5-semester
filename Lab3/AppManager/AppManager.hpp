@@ -8,6 +8,8 @@
 //#include <Windows.h>
 #include <ncurses.h>
 
+#include <LinkedList.hpp>
+
 #include <Line.hpp>
 #include <Explosion.hpp>
 #include <Buffer.hpp>
@@ -29,8 +31,8 @@ private:
 	int8_t maxR_{};
 
 	// Хранит линию и, до первого смещения, время её создания
-	std::list<std::pair<Line, std::optional<Global::TimePoint>>> LineList_;
-	std::list<Explosion> ExplosionList_;
+	LinkedList<std::pair<Line, std::optional<Global::TimePoint>>> LineList_;
+	LinkedList<Explosion> ExplosionList_;
 
 	// Валидирует ввод, чтобы введённое число находилось на интервале [min, max]
 	template <std::integral _Ty>
@@ -101,7 +103,7 @@ public:
 
 	void updateScreen(Buffer &Buff, Global::Duration dt);
 
-	void addLine(Global::TimePoint &&additionTime);
+	void addLine(Global::TimePoint additionTime);
 
 	int8_t getFrequency() const;
 };

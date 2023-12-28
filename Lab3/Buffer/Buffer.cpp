@@ -5,8 +5,11 @@
 void Buffer::resize(int16_t width, int16_t height) {
 	x_ = width + 1;
 	y_ = height + 1;
-
-	buffer_.resize(x_ * y_);
+	size_ = x_ * y_;
+	
+	buffer_.reserve(size_);
+	for (int i = 0; i < size_; i++)
+		buffer_.push_back(CHAR_INFO(' ', 1));
 	clear();
 }
 

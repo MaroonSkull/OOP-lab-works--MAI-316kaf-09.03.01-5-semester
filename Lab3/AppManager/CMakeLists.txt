@@ -10,6 +10,7 @@ target_include_directories (AppManager PUBLIC ./)
 target_compile_features (AppManager PUBLIC cxx_std_20)
 
 target_link_libraries (AppManager
+	PUBLIC Containers
 	PUBLIC Line
 	PUBLIC Explosion
 	PRIVATE Buffer

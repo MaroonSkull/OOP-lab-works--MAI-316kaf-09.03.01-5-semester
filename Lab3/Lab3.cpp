@@ -1,10 +1,11 @@
 ﻿#include "Global.hpp"
 #include <algorithm> // std::sort
-#include <array> // std::array
 #include <chrono>
 #include <iostream>
 #include <thread> // sleep
 #include <ncurses.h>
+
+#include <ArrayList.hpp>
 
 #include <AppManager.hpp>
 #include <Buffer.hpp>
@@ -32,8 +33,9 @@ int main() {
     init_pair(7, 7, COLOR_BLACK);
 
 	// Используем двойную буфферизацию
-	std::array<Buffer, 2> Buffers{};
-	std::vector<TimePoint> timePoints;
+	ArrayList<Buffer> Buffers{};
+	Buffers.push_back(Buffer());
+	ArrayList<TimePoint> timePoints;
 
 	try {
 		// Создаём класс, управляющий консолью и отрисовкой
@@ -77,7 +79,9 @@ int main() {
 			while (Clock::now() - secondStartTime > Duration{ 1.0 / timeToSeconds }) {
 				secondStartTime += Duration{ 1.0 / timeToSeconds }; // Добавляем одну секунду
 				auto prevSize{ timePoints.size() };
-				timePoints.resize(prevSize + freq); // Расширяем хранилище на столько точек, сколько надо добавить на одну секунду
+				for (int i = 0; i < freq; i++)
+					timePoints.push_back(TimePoint()); // Расширяем хранилище на столько точек, сколько надо добавить на одну секунду
+
 				std::ranges::subrange newPoints(timePoints.begin() + prevSize, timePoints.end());
 				// Добавляем рандомный момент во времени, когда мы должны будем создать линию
 				std::ranges::for_each(newPoints, getRandomTimePointInSecond);
@@ -92,7 +96,7 @@ int main() {
 				if (point > Clock::now())
 					break; // То выходим из цикла, время наступит потом когда-нибудь
 
-				Application.addLine(std::move(point));
+				Application.addLine(point);
 				timePoints.erase(timePoints.begin()); // удаляем первый элемент
 				timePoints.shrink_to_fit(); // можно просто resize()
 			}

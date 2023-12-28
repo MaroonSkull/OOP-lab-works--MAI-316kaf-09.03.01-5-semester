@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <ncurses.h>
-#include <vector>
+#include <ArrayList.hpp>
 
 class Buffer {
 public:
@@ -21,8 +21,9 @@ public:
 	CHAR_INFO& getChar(int16_t consoleX, int16_t consoleY);
 private:
 	// вектор линейно хранит двумерный массив CHAR_INFO - структуры WinAPI, содержащей в себе символ и атрибуты (используем только атрибуты цвета)
-	std::vector< CHAR_INFO > buffer_;
+	ArrayList< CHAR_INFO > buffer_;
 	int16_t x_{};
 	int16_t y_{};
+	int16_t size_{};
 	//SMALL_RECT destinationRect_{};
 };

@@ -73,7 +73,7 @@ void AppManager::updateScreen(Buffer &Buff, Global::Duration dt) {
 
 	// Двигаем все существующие взрывы с фиксированной скоростью 2 символа в секунду
 	for (auto Explosion = ExplosionList_.begin(); Explosion != ExplosionList_.end();) {
-		if (Explosion->move(Buff, 2 * dt.count() * Global::timeToSeconds))
+		if ((*Explosion).move(Buff, 2 * dt.count() * Global::timeToSeconds))
 			Explosion = ExplosionList_.erase(Explosion);
 		else
 			Explosion++;
@@ -83,11 +83,11 @@ void AppManager::updateScreen(Buffer &Buff, Global::Duration dt) {
 	auto printLine = [this, &Buff](auto &Line) { Line.first.print(Buff, width_, height_); };
 	auto printExplosion = [this, &Buff](auto &Explosion) { Explosion.print(Buff, width_, height_); };
 	// Выводим все линии и взрывы в порядке их появления (от старых к новым)
-	std::ranges::for_each(LineList_, printLine);
-	std::ranges::for_each(ExplosionList_, printExplosion);
+	std::for_each(LineList_.begin(), LineList_.end(), printLine);
+	std::for_each(ExplosionList_.begin(), ExplosionList_.end(), printExplosion);
 }
 
-void AppManager::addLine(Global::TimePoint &&additionTime) {
+void AppManager::addLine(Global::TimePoint additionTime) {
 	LineList_.push_back(std::make_pair(Line(width_, height_, length_, epilepsy_), additionTime));
 }
 

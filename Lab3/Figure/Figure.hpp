@@ -2,7 +2,7 @@
 
 
 #include <algorithm>
-#include <list>
+#include <LinkedList.hpp>
 
 #include <Global.hpp>
 #include <Buffer.hpp>
@@ -12,7 +12,7 @@
 
 class Figure {
 protected:
-	std::list<Symbol> Symbols_;
+	LinkedList<Symbol> Symbols_;
 	// базовые координаты, от которых начинается фигура
 	double x_{};
 	double y_{};
@@ -82,7 +82,7 @@ public:
 		};
 
 		// Проходим по всем символам
-		std::ranges::for_each(Symbols_, printIfVisible);
+		std::for_each(Symbols_.begin(), Symbols_.end(), printIfVisible);
 	}
 
 	int16_t getX() const {
