@@ -9,7 +9,6 @@ target_include_directories (Buffer PUBLIC ./)
 
 target_link_libraries (Buffer
     PUBLIC Globals
-    PUBLIC Containers
 )
 
 target_compile_features (Buffer PUBLIC cxx_std_23)

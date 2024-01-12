@@ -2,7 +2,7 @@
 
 
 #include <algorithm>
-#include <LinkedList.hpp>
+#include <list>
 
 #include <Global.hpp>
 #include <Buffer.hpp>
@@ -12,7 +12,7 @@
 
 class Figure {
 protected:
-	LinkedList<Symbol> Symbols_;
+	std::list<Symbol> Symbols_;
 	// базовые координаты, от которых начинается фигура
 	double x_{};
 	double y_{};

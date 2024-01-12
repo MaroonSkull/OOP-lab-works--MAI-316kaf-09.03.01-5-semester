@@ -8,7 +8,7 @@
 
 #include <Windows.h>
 
-#include <LinkedList.hpp>
+#include <list>
 
 #include <Line.hpp>
 #include <Explosion.hpp>
@@ -31,8 +31,8 @@ private:
 	int16_t maxR_{};
 
 	// Хранит линию и, до первого смещения, время её создания
-	LinkedList<std::pair<Line, std::optional<Global::TimePoint>>> LineList_;
-	LinkedList<Explosion> ExplosionList_;
+	std::list<std::pair<Line, std::optional<Global::TimePoint>>> LineList_;
+	std::list<Explosion> ExplosionList_;
 
 	// Валидирует ввод, чтобы введённое число находилось на интервале [min, max]
 	template <std::integral _Ty>

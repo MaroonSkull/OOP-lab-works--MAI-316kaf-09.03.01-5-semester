@@ -5,7 +5,7 @@
 #include <thread> // sleep
 #include <iostream>
 
-#include <ArrayList.hpp>
+#include <vector>
 
 #include <AppManager.hpp>
 #include <Buffer.hpp>
@@ -16,9 +16,9 @@ int main() {
 	using namespace Global;
 
 	// Используем двойную буфферизацию
-	ArrayList<Buffer> Buffers{};
+	std::vector<Buffer> Buffers{};
 	Buffers.push_back(Buffer());
-	ArrayList<TimePoint> timePoints;
+	std::vector<TimePoint> timePoints;
 
 	try {
 		// Создаём класс, управляющий консолью и отрисовкой
