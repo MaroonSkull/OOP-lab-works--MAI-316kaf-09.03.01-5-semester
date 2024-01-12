@@ -67,6 +67,15 @@ Line::Line(int16_t width, int16_t height, int8_t length, bool epilepsy)
 		figureColor_ = static_cast<int8_t>(Global::getRandomUniformDistribution(1, 15));
 }
 
+int8_t Line::generateColor() {
+	// цвет рандомный, если установлен флаг эпилепсии для символа, Цвет константно-рандомный, если установлен флаг эпилепсии для Линии. Ярко-зелёный (№10) по-умолчанию
+
+	if constexpr (Global::myEpilepsyType == Global::EpilepsyType::symbol)
+		return epilepsy_ ? static_cast<int8_t>(Global::getRandomUniformDistribution(1, 15)) : 10;
+	else if constexpr (Global::myEpilepsyType == Global::EpilepsyType::line)
+		return epilepsy_ ? figureColor_ : 10;
+}
+
 bool Line::move(Buffer &Buff, double distance) {
 	bool wasThereAShift{false}; // регистрирует, было ли смещение у готовой линии хотя бы на 1 символ
 	// Получаем текущую позицию начала линии

@@ -30,14 +30,7 @@ protected:
 		return isSpace ? ' ' : static_cast<char>(Global::getRandomUniformDistribution(33, 126));;
 	}
 
-	int8_t generateColor() {
-		// цвет рандомный, если установлен флаг эпилепсии для символа, Цвет константно-рандомный, если установлен флаг эпилепсии для Линии. Ярко-зелёный (№10) по-умолчанию
-
-		if constexpr (Global::myEpilepsyType == Global::EpilepsyType::symbol)
-			return epilepsy_ ? static_cast<int8_t>(Global::getRandomUniformDistribution(1, 15)) : 10;
-		else if constexpr (Global::myEpilepsyType == Global::EpilepsyType::line)
-			return epilepsy_ ? figureColor_ : 10;
-	}
+	virtual int8_t generateColor() = 0;
 
 public:
 	Figure(int16_t width, int16_t height, bool epilepsy) : width_{ width }, height_{ height }, epilepsy_{ epilepsy } {}

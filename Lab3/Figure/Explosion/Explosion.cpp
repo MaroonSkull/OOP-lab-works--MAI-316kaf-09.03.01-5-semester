@@ -6,6 +6,11 @@ Explosion::Explosion(int16_t width, int16_t height, int8_t maxR, std::pair<doubl
 	: Figure(width, height, startPosition.first, startPosition.second), maxR_{ maxR }
 {}
 
+int8_t Explosion::generateColor() {
+	// цвет всегда рандомный
+	return static_cast<int8_t>(Global::getRandomUniformDistribution(1, 15));
+}
+
 // Возвращает true, когда радиус достиг максимального значения
 bool Explosion::move(Buffer &Buff, double distance) {
 	R_ += distance;
