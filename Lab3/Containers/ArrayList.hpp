@@ -19,37 +19,7 @@ class ArrayList : public List<T> {
 
   ArrayList() : data_(nullptr), capacity_(0), size_(0), alloc_(Allocator()) {}
 
-  template <typename Iter>
-  ArrayList(Iter beg, Iter end) : ArrayList() {
-    size_type input_size = static_cast<size_type>(std::distance(beg, end));
-    reserve(input_size);
-    size_ = input_size;
-    for (size_type i = 0; i < input_size; ++i) {
-      CreateElement(&data_[i], *beg);
-      ++beg;
-    }
-  }
-
-  ArrayList(std::initializer_list<value_type> const &items)
-      : ArrayList(items.begin(), items.end()) {}
-
-  ArrayList(const ArrayList &other) : ArrayList(other.begin(), other.end()) {}
-
   ~ArrayList() { freeDataArray(data_, capacity_, size_); }
-
-  ArrayList &operator=(const ArrayList &other) {
-    if (this != &other) {
-      ArrayList(other).swap(*this);
-    }
-    return *this;
-  }
-
-  ArrayList &operator=(ArrayList &&other) {
-    if (this != &other) {
-      ArrayList(std::move(other)).swap(*this);
-    }
-    return *this;
-  }
 
   void push_back(T &&value) {
     AutomaticReserveLogic();
@@ -57,16 +27,8 @@ class ArrayList : public List<T> {
     ++size_;
   }
 
-  void push_back(const T &value) {
-    AutomaticReserveLogic();
-    CreateElement(&data_[size_], value);
-    ++size_;
-  };
   iterator insert(const_iterator pos, const_reference value) {
     return InsertElement(pos, value);
-  }
-  iterator insert(const_iterator pos, value_type &&value) {
-    return InsertElement(pos, std::move(value));
   }
 
   void erase(iterator pos) {
@@ -85,20 +47,6 @@ class ArrayList : public List<T> {
     --size_;
   }
 
-  void pop_back() {
-    alloc_traits::destroy(alloc_, data_ + size_ - 1);
-    --size_;
-  }
-
-  void clear() {
-    if (data_ != nullptr) {
-      for (size_type i = 0; i < size_; ++i) {
-        alloc_traits::destroy(alloc_, data_ + i);
-      }
-    }
-    size_ = 0;
-  }
-
   // ELEMENT ACCESS
   reference at(size_type pos) {
     if (!(pos < size_)) {
@@ -107,38 +55,18 @@ class ArrayList : public List<T> {
     }
     return data_[pos];
   }
-  const_reference at(size_type pos) const {
-    if (!(pos < size_)) {
-      throw std::out_of_range(std::to_string(pos) + "not less then" +
-                              std::to_string(size_));
-    }
-    return data_[pos];
-  }
-  reference operator[](size_type pos) { return data_[pos]; }
-  const_reference operator[](size_type pos) const { return data_[pos]; }
   const_reference front() const { return data_[0]; }
-  const_reference back() const { return data_[size_ - 1]; }
-  pointer data() { return data_; }
 
   // ITERATORS
   iterator begin() { return data_; }
-
   const_iterator begin() const { return data_; };
-
   const_iterator cbegin() { return data_; };
-
   iterator end() { return data_ + size_; }
-
   const_iterator end() const { return data_ + size_; };
-
   const_iterator cend() { return data_ + size_; };
 
   // CAPACITY
-  bool empty() { return size_ == 0; };
-
   size_type size() const { return size_; }
-
-  size_type max_size() { return alloc_traits::max_size(alloc_); }
 
   void reserve(size_type new_capacity) {
     if (new_capacity > capacity_) {
@@ -148,8 +76,6 @@ class ArrayList : public List<T> {
       capacity_ = new_capacity;
     }
   }
-
-  size_type capacity() const { return capacity_; }
 
   void shrink_to_fit() {
     pointer new_data = MoveToNewDataArray(size_, size_, data_);
@@ -165,36 +91,16 @@ class ArrayList : public List<T> {
     std::swap(size_, other.size_);
   }
 
-  template <class... Args>
-  iterator insert_many(const_iterator pos, Args &&...args) {
-    static_assert(
-        (std::is_same_v<value_type, std::remove_reference_t<decltype(args)>> &&
-         ...));
-    size_type before_insert_count =
-        static_cast<size_type>(std::distance(cbegin(), pos));
-    size_type after_insert_count =
-        static_cast<size_type>(std::distance(pos, cend()));
-    reserve(capacity_ + sizeof...(args));
-    pointer new_data = alloc_traits::allocate(alloc_, capacity_);
-    ConstructElementsFromAnotherData(before_insert_count, data_, new_data);
-    ConstructElementsFromAnotherData(
-        after_insert_count, data_ + before_insert_count,
-        new_data + before_insert_count + sizeof...(args));
-    size_type tmp = before_insert_count - 1;
-    (CreateElement(new_data + ++tmp, std::forward<Args>(args)), ...);
-    freeDataArray(data_, capacity_, size_);
-    data_ = new_data;
-    size_ += sizeof...(args);
-    return data_ + before_insert_count;
+  // слой совместимости с родительским классом
+  void insert(int pos, T value) {
+    const_iterator toInsert = std::next(begin(), pos);
+    insert(toInsert, value);
   }
-
-  template <class... Args>
-  void insert_many_back(Args &&...args) {
-    static_assert(
-        (std::is_same_v<value_type, std::remove_reference_t<decltype(args)>> &&
-         ...));
-    (push_back(std::forward<Args>(args)), ...);
+  void erase(int pos) {
+    iterator toRemove = std::next(begin(), pos);
+    erase(toRemove);
   }
+  int size() { return size_; }
 
  private:
   pointer data_;
@@ -274,8 +180,3 @@ class ArrayList : public List<T> {
     return data_ + before_insert_count;
   }
 };
-
-// Deduction guide for iterators constructor
-template <typename Iter>
-ArrayList(Iter beg, Iter end)
-    -> ArrayList<typename std::iterator_traits<Iter>::value_type>;

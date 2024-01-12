@@ -26,28 +26,11 @@ struct BaseListNode {
     prev_ = this;
     next_ = this;
   }
-  static void swap(BaseListNode &lhs, BaseListNode &rhs) {
-    BaseListNode *lhs_next = lhs.next_;
-    BaseListNode *rhs_next = rhs.next_;
-    lhs.Unhook();
-    rhs.Unhook();
-    if (rhs_next != &rhs) {
-      lhs.HookBefore(rhs_next);
-    };
-    if (lhs_next != &lhs) {
-      rhs.HookBefore(lhs_next);
-    };
-  }
 };
 
 template <typename T>
 struct ListNode : public BaseListNode {
   T value_;
-
-  // ListNode(const T &value) : value_(value) {}
-  // ListNode(T &&value) : value_(std::move(value)) {}
-  // template <typename... Args>
-  // ListNode(Args &&...value) : value_(T(std::forward<Args>(value)...)) {}
 };
 
 template <typename T, bool isConst>
@@ -131,8 +114,8 @@ class LinkedList : public List<T> {
   using base_node = list_internal::BaseListNode;
   using node = list_internal::ListNode<value_type>;
   using value_traits = std::allocator_traits<Allocator>;
-  using node_alloc = typename value_traits::rebind_alloc<node>;
-  using node_traits = typename value_traits::rebind_traits<node>;
+  using node_alloc = typename value_traits::template rebind_alloc<node>;
+  using node_traits = typename value_traits::template rebind_traits<node>;
 
   // Constructors
 
@@ -141,31 +124,6 @@ class LinkedList : public List<T> {
         val_alloc_(Allocator()),
         size_(0),
         fakeNode_(&fakeNode_, &fakeNode_) {}
-
-  explicit LinkedList(size_type n, const Allocator &alloc = Allocator())
-      : node_alloc_(node_alloc()),
-        val_alloc_(alloc),
-        size_(0),
-        fakeNode_{&fakeNode_, &fakeNode_} {
-    for (size_type i = 0; i < n; ++i) {
-      emplace_back();
-    }
-  }
-
-  LinkedList(const std::initializer_list<value_type> &items)
-      : node_alloc_(node_alloc()),
-        val_alloc_(Allocator()),
-        size_(0),
-        fakeNode_(&fakeNode_, &fakeNode_) {
-    try {
-      for (auto &element : items) {
-        push_back(element);
-      }
-    } catch (...) {
-      clear();
-      throw;
-    }
-  }
 
   LinkedList(const LinkedList &other)
       : node_alloc_(other.node_alloc_),
@@ -182,36 +140,7 @@ class LinkedList : public List<T> {
     }
   }
 
-  LinkedList(LinkedList &&other)
-      : node_alloc_(std::move(other.node_alloc_)),
-        val_alloc_(std::move(other.val_alloc_)),
-        size_(other.size_),
-        fakeNode_(&fakeNode_, &fakeNode_) {
-    if (other.size_ > 0) {
-      fakeNode_.HookBefore(&other.fakeNode_);
-      other.fakeNode_.Unhook();
-      other.size_ = 0;
-    }
-  }
-
   ~LinkedList() { clear(); }
-
-  LinkedList &operator=(const LinkedList &l) {
-    if (this != &l) {
-      LinkedList(l).swap(*this);
-    }
-    return *this;
-  }
-
-  LinkedList &operator=(LinkedList &&l) {
-    LinkedList temp(std::move(l));
-    swap(temp);
-    return *this;
-  }
-
-  // Element Access
-  const_reference front() const { return *begin(); }
-  const_reference back() const { return *(--end()); }
 
   // Iterators
   iterator begin() { return fakeNode_.next_; }
@@ -222,13 +151,9 @@ class LinkedList : public List<T> {
   // Reverse iterators
   reverse_iterator rbegin() { return reverse_iterator(&fakeNode_); }
   reverse_iterator rend() { return reverse_iterator(fakeNode_.next_); }
-  const_reverse_iterator rbegin() const { return reverse_iterator(&fakeNode_); }
-  const_reverse_iterator rend() const { return reverse_iterator(fakeNode_.next_); }
 
   // Capacity
-  bool empty() const { return size() == 0; }
   size_type size() const { return size_; }
-  size_type max_size() const { return node_traits::max_size(node_alloc_); }
 
   // Modifiers
   iterator insert(const_iterator pos, const_reference value) {
@@ -255,144 +180,20 @@ class LinkedList : public List<T> {
     InsertNodeBefore(end(), std::move(value));
   }
 
-  void pop_back() { EraseNode(--end()); }
-
-  template <typename... Args>
-  void emplace_back(Args &&...value) {
-    InsertNodeBefore(end(), std::forward<Args>(value)...);
-  }
-
-  void push_front(const_reference value) { InsertNodeBefore(begin(), value); }
-
-  void push_front(value_type &&value) {
-    InsertNodeBefore(begin(), std::move(value));
-  }
-
   void pop_front() { EraseNode(begin()); }
-
-  void swap(LinkedList &other) {
-    // node_alloc node_alloc_tmp = node_alloc_;
-    // node_alloc_ = other.node_alloc_;
-    // other.node_alloc_ = node_alloc_tmp;
-    std::swap(node_alloc_, other.node_alloc_);
-    std::swap(val_alloc_, other.val_alloc_);
-    std::swap(size_, other.size_);
-    base_node::swap(fakeNode_, other.fakeNode_);
-  }
-
-  void merge(LinkedList &other) { merge(std::move(other)); }
-
-  void merge(LinkedList &&other) {
-    auto comparator = [](const T &a, const T &b) -> bool { return a < b; };
-    merge<decltype(comparator)>(std::move(other), comparator);
-  }
-
-  template <class Compare>
-  void merge(LinkedList &other, Compare comp) {
-    merge<Compare>(std::move(other), comp);
-  }
-  // Merge two lists.
-  // No elements are copied
-  // Basic exception safety(not all other list elements will be merged)
-  template <class Compare>
-  void merge(LinkedList &&other, Compare comp) {
-    if (&other == this) {
-      return;
-    }
-    iterator first = begin();
-    iterator second = other.begin();
-    while (first != end() && second != other.end()) {
-      if (comp(*second, *first)) {
-        TransferNodeBefore(first.GetNode(), second++);
-        ++size_;
-        --other.size_;
-      } else {
-        ++first;
-      }
-    }
-    while (second != other.end()) {
-      TransferNodeBefore(first.GetNode()->next_, second++);
-      ++size_;
-      --other.size_;
-    }
-  }
-
-  void splice(const_iterator pos, LinkedList &other) {
-    splice(pos, std::move(other));
-  }
-
-  void splice(const_iterator pos, LinkedList &&other) {
-    base_node_pointer pos_node = (IteratorConstCast(pos).GetNode());
-    base_node_pointer other_first_node = other.begin().GetNode();
-    base_node_pointer other_last_node = (--other.end()).GetNode();
-    other_first_node->prev_ = pos_node->prev_;
-    pos_node->prev_->next_ = other_first_node;
-    other_last_node->next_ = pos_node;
-    pos_node->prev_ = other_last_node;
-    size_ += other.size_;
-    other.fakeNode_ = {&other.fakeNode_, &other.fakeNode_};
-    other.size_ = 0;
-  }
-
-  void reverse() {
-    iterator it = begin();
-    while (it != end()) {
-      base_node_pointer node = (it++).GetNode();
-      base_node_pointer tmp = node->next_;
-      node->next_ = node->prev_;
-      node->prev_ = tmp;
-    }
-    base_node_pointer tmp = fakeNode_.next_;
-    fakeNode_.next_ = fakeNode_.prev_;
-    fakeNode_.prev_ = tmp;
-  }
 
   void clear() { erase(begin(), end()); }
 
-  void sort() {
-    auto comparator = [](const T &a, const T &b) -> bool { return a < b; };
-    sort<decltype(comparator)>(comparator);
+  // слой совместимости с родительским классом
+  void insert(int pos, T value) {
+    const_iterator toInsert = std::next(begin(), pos);
+    insert(toInsert, value);
   }
-
-  // Sorting by selection sort O(n^2)
-  template <typename Compare>
-  void sort(Compare comp) {
-    SelectionSort<Compare>(comp);
+  void erase(int pos) {
+    const_iterator toRemove = std::next(begin(), pos);
+    erase(toRemove, const_iterator(toRemove.GetNode()->next_));
   }
-
-  void unique() {
-    auto predicate = [](const T &a, const T &b) -> bool { return a == b; };
-    unique<decltype(predicate)>(predicate);
-  }
-
-  template <class BinaryPredicate>
-  void unique(BinaryPredicate p) {
-    iterator first = begin();
-    iterator second = ++begin();
-    while (second != end())
-      if (p(*first, *second)) {
-        EraseNode(second++);
-      } else {
-        first = second++;
-      }
-  }
-
-  template <class... Args>
-  iterator insert_many(const_iterator pos, Args &&...args) {
-    static_assert(
-        (std::is_same_v<value_type, std::remove_reference_t<decltype(args)>> &&
-         ...));
-    (insert(pos, std::forward<Args>(args)), ...);
-    return IteratorConstCast(pos);
-  }
-  template <class... Args>
-  void insert_many_back(Args &&...args) {
-    insert_many(end(), args...);
-  }
-  template <class... Args>
-  void insert_many_front(Args &&...args) {
-    insert_many(begin(), args...);
-  }
+  int size() { return size_; }
 
  private:
   using node_pointer = node *;
@@ -411,8 +212,6 @@ class LinkedList : public List<T> {
   node_pointer CreateNode(Args &&...value) {
     node_pointer temp = node_traits::allocate(node_alloc_, 1);
     try {
-      // node_traits::construct(node_alloc_, temp,
-      // std::forward<Args>(value)...);
       value_traits::construct(val_alloc_, &(temp->value_),
                               std::forward<Args>(value)...);
     } catch (...) {
@@ -440,12 +239,6 @@ class LinkedList : public List<T> {
     new_node->HookBefore(node_from_pos);
     ++size_;
   }
-  // Unhook node and place it before pos
-  void TransferNodeBefore(iterator pos, iterator node_for_steal) {
-    base_node_pointer tmp = node_for_steal.GetNode();
-    tmp->Unhook();
-    tmp->HookBefore(pos.GetNode());
-  }
 
   // Const cast from const iterator to non-const iterator
   iterator IteratorConstCast(const_iterator pos) const {
@@ -453,24 +246,4 @@ class LinkedList : public List<T> {
         const_cast<typename iterator::base_node_pointer>(pos.GetNode()));
     return temp;
   }
-
-  template <class Compare>
-  void SelectionSort(Compare comp) {
-    LinkedList temp;
-    while (size_ > 0) {
-      iterator min_element(begin());
-      for (auto it = begin(); it != end(); ++it) {
-        min_element = (comp(*it, *min_element)) ? it : min_element;
-      }
-      temp.TransferNodeBefore(temp.end(), min_element);
-      --size_;
-      ++temp.size_;
-    }
-    swap(temp);
-  }
 };
-
-// Deduction guide for initializer list constructor
-// It depends on compiler, will it be created by default
-template <typename T>
-LinkedList(std::initializer_list<T>) -> LinkedList<T>;
