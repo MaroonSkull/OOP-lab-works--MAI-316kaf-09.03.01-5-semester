@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <random>
+#include <Windows.h>
 
 
 namespace Global {
@@ -39,6 +40,18 @@ namespace Global {
 	static constexpr auto myDirection{ Direction::upToDown };
 	static constexpr auto myLineType{ LineType::zigzag };
 	static constexpr auto myEpilepsyType{ EpilepsyType::symbol };
+
+	template <typename T>
+	void setConsoleColor(T ForgC) {
+		WORD wColor = static_cast<WORD>(ForgC & 0x0F);
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), wColor);
+	}
+
+	template <typename T>
+	void setConsoleCursorPos(T x, T y) {
+		COORD pos = { static_cast<SHORT>(x), static_cast<SHORT>(y) };
+		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+	}
 
 	static std::random_device rd;
 	static std::ranlux24_base engine(rd());

@@ -1,6 +1,5 @@
 ﻿#include <AppManager.hpp>
 #include <algorithm>
-#include <ncurses.h>
 
 AppManager::AppManager() {
 	try {
@@ -18,9 +17,8 @@ AppManager::AppManager() {
 	}
 	catch (...) {
 		clearScreen();
-		move(0, 0);//Global::setConsoleCursorPos(0, 0);
-		printw("Exception in AppManager()!");//std::cerr << "Exception in AppManager()!" << std::endl;
-		refresh();
+		Global::setConsoleCursorPos(0, 0);
+		std::cerr << "Exception in AppManager()!" << std::endl;
 		throw;
 	}
 }
@@ -92,14 +90,12 @@ void AppManager::addLine(Global::TimePoint additionTime) {
 }
 
 void AppManager::clearScreen() {
-	/*CONSOLE_SCREEN_BUFFER_INFO s;
-	GetConsoleScreenBufferInfo(Global::hConsole, &s);
+	CONSOLE_SCREEN_BUFFER_INFO s;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &s);
 	DWORD written, cells = s.dwSize.X * s.dwSize.Y;
-	FillConsoleOutputCharacter(Global::hConsole, ' ', cells, Global::tl, &written);
-	FillConsoleOutputAttribute(Global::hConsole, s.wAttributes, cells, Global::tl, &written);
-	Global::setConsoleCursorPos(0, 0);*/
-	clear();
-	refresh();
+	FillConsoleOutputCharacter(GetStdHandle(STD_OUTPUT_HANDLE), ' ', cells, { 0, 0 }, &written);
+	FillConsoleOutputAttribute(GetStdHandle(STD_OUTPUT_HANDLE), s.wAttributes, cells, { 0, 0 }, &written);
+	Global::setConsoleCursorPos(0, 0);
 }
 
 int8_t AppManager::getFrequency() const {
@@ -115,17 +111,11 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 
 		std::string inp;
 
-		printw("Enable %s? (Y/N): ", msg.data());//std::cout << "Enable " << msg << "? (Y/N): " << std::endl;
-		refresh();
-		//std::getline(std::cin, inp); // fetch user input, save into inp
-		int ch = getch();
-		while ( ch != '\n' ) {
-			inp.push_back( ch );
-			ch = getch();
-		}
+		std::cout << "Enable " << msg << "? (Y/N): " << std::endl;
 
-		// Скорее всего, это исключение вообще никогда не возникнет
-		//if (std::cin.fail()) throw std::invalid_argument("invalid argument!");
+		std::getline(std::cin, inp); // fetch user input, save into inp
+
+		if (std::cin.fail()) throw std::invalid_argument("invalid argument!");
 		// Приводим строку к нижнему регистру
 		std::transform(inp.begin(), inp.end(), inp.begin(),
 			[](std::string::value_type c) { return std::tolower(c); });
@@ -140,31 +130,23 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 	}
 	catch (const std::exception &e) {
 		clearScreen();
-		move(0, 0);//Global::setConsoleCursorPos(0, 0);
-		printw("%s\n", e.what());//std::cerr << e.what() << std::endl;
-		refresh();
+		Global::setConsoleCursorPos(0, 0);
+		std::cerr << e.what() << std::endl;
 	}
 	catch (...) {
 		clearScreen();
-		move(0, 0);//Global::setConsoleCursorPos(0, 0);
-		printw("Unknown critical exeption!\n");//std::cerr << "Unknown critical exeption!" << std::endl;
-		refresh();
+		Global::setConsoleCursorPos(0, 0);
+		std::cerr << "Unknown critical exeption!" << std::endl;
 		throw;
 	}
 }
 
 bool AppManager::updateConsoleSizes() {
-	/*CONSOLE_SCREEN_BUFFER_INFO csbi;
-	GetConsoleScreenBufferInfo(Global::hConsole, &csbi);
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
 
 	auto width{ csbi.srWindow.Right - csbi.srWindow.Left };
 	auto height{ csbi.srWindow.Bottom - csbi.srWindow.Top };
-	*/
-
-	uint16_t width, height;
-	getmaxyx(stdscr, height, width);
-	width--;
-	height--;
 
 	if (width == 0 || height == 0)
 		throw std::runtime_error{ "AppManager::getConsoleInfo() : Sizes of console is undefined!" };

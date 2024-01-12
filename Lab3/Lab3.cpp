@@ -3,7 +3,7 @@
 #include <chrono>
 #include <iostream>
 #include <thread> // sleep
-#include <ncurses.h>
+#include <iostream>
 
 #include <ArrayList.hpp>
 
@@ -14,23 +14,6 @@
 
 int main() {
 	using namespace Global;
-	// запуск ncurses
-	initscr();
-	cbreak();
-	if (has_colors() == FALSE) {
-        endwin();
-        std::cerr << "Ваш терминал не поддерживает цвет" << std::endl;
-        return -3;
-    }
-    start_color();
-    init_pair(0, 0, COLOR_BLACK);
-    init_pair(1, 1, COLOR_BLACK);
-    init_pair(2, 2, COLOR_BLACK);
-    init_pair(3, 3, COLOR_BLACK);
-    init_pair(4, 4, COLOR_BLACK);
-    init_pair(5, 5, COLOR_BLACK);
-    init_pair(6, 6, COLOR_BLACK);
-    init_pair(7, 7, COLOR_BLACK);
 
 	// Используем двойную буфферизацию
 	ArrayList<Buffer> Buffers{};
@@ -109,11 +92,10 @@ int main() {
 
 			// Отображаем текущий FPS
 			if constexpr (showFPS) {
-				//setConsoleColor(15);
-				move(0, 0);//setConsoleCursorPos(0, 0);
-				printw("FPS = %f", 1. / (duration_cast<Duration>(Clock::now() - frameStartTime).count() * timeToSeconds));//std::cout << "FPS = " << 1. / (getFrameTime().count() * timeToSeconds) << std::endl;
-				move(0, 0);//setConsoleCursorPos(0, 0);
-				refresh();
+				setConsoleColor(15);
+				setConsoleCursorPos(0, 0);
+				std::cout << "FPS = " << 1. / (duration_cast<Duration>(Clock::now() - frameStartTime).count() * timeToSeconds) << std::endl;
+				setConsoleCursorPos(0, 0);
 			}
 
 			// Если успели быстрее, ждём начала следующего кадра, чтобы не греть кремний
@@ -123,18 +105,15 @@ int main() {
 		}
 	}
 	catch (const std::exception &e) {
-		move(0, 0);//setConsoleCursorPos(0, 0);
-		endwin();
+		setConsoleCursorPos(0, 0);
 		std::cerr << "std::exception: " << e.what() << std::endl;
 		return -1;
 	}
 	catch (...) {
-		move(0, 0);//setConsoleCursorPos(0, 0);
-		endwin();
+		setConsoleCursorPos(0, 0);
 		std::cerr << "unexpected exception!" << std::endl;
 		return -2;
 	}
 
-	endwin();
 	return 0;
 }

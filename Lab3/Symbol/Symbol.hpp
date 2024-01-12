@@ -3,6 +3,8 @@
 #include <Global.hpp>
 #include <Buffer.hpp>
 
+#include <Windows.h>
+
 
 
 class Symbol {

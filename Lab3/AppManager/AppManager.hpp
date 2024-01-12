@@ -4,9 +4,9 @@
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <iostream>
 
-//#include <Windows.h>
-#include <ncurses.h>
+#include <Windows.h>
 
 #include <LinkedList.hpp>
 
@@ -27,8 +27,8 @@ private:
 	int8_t length_{};
 	bool epilepsy_{};
 	int16_t probability_{};
-	int8_t minR_{};
-	int8_t maxR_{};
+	int16_t minR_{};
+	int16_t maxR_{};
 
 	// Хранит линию и, до первого смещения, время её создания
 	LinkedList<std::pair<Line, std::optional<Global::TimePoint>>> LineList_;
@@ -59,18 +59,12 @@ private:
 			std::string inp;
 			_Ty integer;
 			
-			printw("Please, enter %s in [%d, %d]: ", msg.data(), min, max);//std::cout << "Please, enter " << msg << " in [" << min << ", " << max << "]: ";
-			refresh();
-			//std::getline(std::cin, inp); // fetch user input, save into inp
-			int ch = getch();
-			while ( ch != '\n' ) {
-				inp.push_back( ch );
-				ch = getch();
-			}
+			std::cout << "Please, enter " << msg << " in [" << min << ", " << max << "]: ";
+			std::getline(std::cin, inp); // fetch user input, save into inp
 
 			integer = getIntegralFromString(inp);
 
-			//if (std::cin.fail()) throw std::invalid_argument("The input could not be interpreted as a number!"); // Скорее всего, это исключение вообще никогда не возникнет
+			if (std::cin.fail()) throw std::invalid_argument("invalid argument!");
 			if (integer < min) throw std::out_of_range("Entered value ("s + std::to_string(integer) + ") less than the minimum possible (" + std::to_string(min) + ")!");
 			if (integer > max) throw std::out_of_range("Entered value ("s + std::to_string(integer) + ") more than the maximum possible (" + std::to_string(max) + ")!");
 
@@ -80,15 +74,13 @@ private:
 		}
 		catch (const std::exception &e) {
 			clearScreen();
-			move(0, 0);//Global::setConsoleCursorPos(0, 0);
-			printw("%s\n", e.what());//std::cerr << e.what() << std::endl;
-			refresh();
+			Global::setConsoleCursorPos(0, 0);
+			std::cerr << e.what() << std::endl;
 		}
 		catch (...) {
 			clearScreen();
-			move(0, 0);//Global::setConsoleCursorPos(0, 0);
-			printw("Unknown critical error!\n");//std::cerr << "Unknown critical error!" << std::endl;
-			refresh();
+			Global::setConsoleCursorPos(0, 0);
+			std::cerr << "Unknown critical error!" << std::endl;
 			throw;
 		}
 	}
