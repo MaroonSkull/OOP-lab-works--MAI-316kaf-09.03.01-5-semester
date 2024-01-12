@@ -132,6 +132,8 @@ bool AppManager::getConfirmFromConsole(std::string_view msg) {
 		// Если введена любая из подходящих команд
 		if ((inp != "y" && inp != "n")) throw std::invalid_argument("Entered value ("s + inp + ") is invalid!");
 
+		clearScreen();
+
 		// В этот момент inp гарантированно содержит либо "y", либо "n",
 		// достаточно условия только на одно из состояний
 		return (inp == "y") ? true : false;

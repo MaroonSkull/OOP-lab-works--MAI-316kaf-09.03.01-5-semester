@@ -58,7 +58,7 @@ private:
 
 			std::string inp;
 			_Ty integer;
-
+			
 			printw("Please, enter %s in [%d, %d]: ", msg.data(), min, max);//std::cout << "Please, enter " << msg << " in [" << min << ", " << max << "]: ";
 			refresh();
 			//std::getline(std::cin, inp); // fetch user input, save into inp
@@ -73,6 +73,8 @@ private:
 			//if (std::cin.fail()) throw std::invalid_argument("The input could not be interpreted as a number!"); // Скорее всего, это исключение вообще никогда не возникнет
 			if (integer < min) throw std::out_of_range("Entered value ("s + std::to_string(integer) + ") less than the minimum possible (" + std::to_string(min) + ")!");
 			if (integer > max) throw std::out_of_range("Entered value ("s + std::to_string(integer) + ") more than the maximum possible (" + std::to_string(max) + ")!");
+
+			clearScreen();
 
 			return integer;
 		}
